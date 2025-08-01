@@ -38,7 +38,7 @@
             ]
           },
           {
-            "group": "AI tools",
+            "group": "AsI tools",
             "pages": [
               "ai-tools/cursor",
               "ai-tools/claude-code",
