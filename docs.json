@@ -43,14 +43,6 @@
               "ag-control/saida",
               "ag-control/cancelamento"
             ]
-          },
-          {
-            "group": "AsI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
-            ]
           }
         ]
       },
