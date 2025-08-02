@@ -1,217 +1,988 @@
-{
-  "openapi": "3.1.0",
-  "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
-    "version": "1.0.0"
-  },
-  "servers": [
-    {
-      "url": "http://sandbox.mintlify.com"
-    }
-  ],
-  "security": [
-    {
-      "bearerAuth": []
-    }
-  ],
-  "paths": {
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
-      "post": {
-        "description": "Information about a new plant added to the store",
-        "requestBody": {
-          "description": "Plant added to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
-        }
-      },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ]
-      },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
-      }
-    }
-  }
-}
+info:
+  description: Documentação gerada automaticamente a partir de arquivo HAR.
+  title: MGN SYSTEM - AG CONTROL API
+  version: 1.0.0
+openapi: 3.0.3
+paths:
+  /ag-control/v1/cancelamento:
+    post:
+      requestBody:
+        content:
+          application/json:
+            example:
+              documento_destinatario: '33000111000177'
+              nf_entrada: '445627'
+              observacao: Cancelamento solicitado por divergência
+        required: true
+      responses:
+        '200':
+          description: Sucesso
+        '400':
+          description: Erro de validação
+        '401':
+          description: Não autorizado
+      summary: POST /ag-control/v1/cancelamento
+  /ag-control/v1/confirmar_recebimento:
+    post:
+      requestBody:
+        content:
+          application/json:
+            example:
+              raw: "[\n  {\n    \"armazem_documento\": \"00163083000130\",\n    \"\
+                codigo\": \"5001007003456\",\n    \"lote\": \"LT-6286\",\n    \"nf_entrada\"\
+                : \"266549\",\n    \"nf_ag\": \"8335\",\n    \"data_entrada\": \"\
+                2025-07-24\"\n  },\n  {\n    \"armazem_documento\": \"00163083000130\"\
+                ,\n    \"codigo\": \"4001005001234\",\n    \"lote\": \"LT-5208\",\n\
+                \    \"nf_entrada\": \"726367\",\n    \"nf_ag\": \"7999\",\n    \"\
+                data_entrada\": \"2025-07-24\"\n  },\n  {\n    \"armazem_documento\"\
+                : \"00163083000130\",\n    \"codigo\": \"4002006005678\",\n    \"\
+                lote\": \"LT-3728\",\n    \"nf_entrada\": \"468022\",\n    \"nf_ag\"\
+                : \"8622\",\n    \"data_entrada\": \"2025-07-11\"\n  },\n  {\n   \
+                \ \"armazem_documento\": \"00163083000130\",\n    \"codigo\": \"6003008007890\"\
+                ,\n    \"lote\": \"LT-8881\",\n    \"nf_entrada\": \"699491\",\n \
+                \   \"nf_ag\": \"7129\",\n    \"data_entrada\": \"2025-07-17\"\n \
+                \ },\n  {\n    \"armazem_documento\": \"00163083000130\",\n    \"\
+                codigo\": \"6003008007890\",\n    \"lote\": \"LT-2200\",\n    \"nf_entrada\"\
+                : \"432640\",\n    \"nf_ag\": \"4466\",\n    \"data_entrada\": \"\
+                2025-07-22\"\n  },\n  {\n    \"armazem_documento\": \"00163083000130\"\
+                ,\n    \"codigo\": \"6003008007890\",\n    \"lote\": \"LT-5519\",\n\
+                \    \"nf_entrada\": \"719490\",\n    \"nf_ag\": \"9717\",\n    \"\
+                data_entrada\": \"2025-07-10\"\n  },\n  {\n    \"armazem_documento\"\
+                : \"00163083000130\",\n    \"codigo\": \"5001007003456\",\n    \"\
+                lote\": \"LT-3044\",\n    \"nf_entrada\": \"459667\",\n    \"nf_ag\"\
+                : \"9753\",\n    \"data_entrada\": \"2025-07-04\"\n  },\n  {\n   \
+                \ \"armazem_documento\": \"00163083000130\",\n    \"codigo\": \"7004009002345\"\
+                ,\n    \"lote\": \"LT-1232\",\n    \"nf_entrada\": \"844511\",\n \
+                \   \"nf_ag\": \"7645\",\n    \"data_entrada\": \"2025-07-23\"\n \
+                \ },\n  {\n    \"armazem_documento\": \"00163083000130\",\n    \"\
+                codigo\": \"6003008007890\",\n    \"lote\": \"LT-4418\",\n    \"nf_entrada\"\
+                : \"681708\",\n    \"nf_ag\": \"8949\",\n    \"data_entrada\": \"\
+                2025-07-21\"\n  },\n  {\n    \"armazem_documento\": \"00163083000130\"\
+                ,\n    \"codigo\": \"4001005001234\",\n    \"lote\": \"LT-1719\",\n\
+                \    \"nf_entrada\": \"391814\",\n    \"nf_ag\": \"8997\",\n    \"\
+                data_entrada\": \"2025-07-22\"\n  },\n  {\n    \"armazem_documento\"\
+                : \"00163083000130\",\n    \"codigo\": \"4002006005678\",\n    \"\
+                lote\": \"LT-6642\",\n    \"nf_entrada\": \"750862\",\n    \"nf_ag\"\
+                : \"6860\",\n    \"data_entrada\": \"2025-07-10\"\n  },\n  {\n   \
+                \ \"armazem_documento\": \"00163083000130\",\n    \"codigo\": \"5001007003456\"\
+                ,\n    \"lote\": \"LT-8116\",\n    \"nf_entrada\": \"960999\",\n \
+                \   \"nf_ag\": \"5524\",\n    \"data_entrada\": \"2025-07-21\"\n \
+                \ },\n  {\n    \"armazem_documento\": \"00163083000130\",\n    \"\
+                codigo\": \"4001005001234\",\n    \"lote\": \"LT-9421\",\n    \"nf_entrada\"\
+                : \"141765\",\n    \"nf_ag\": \"9586\",\n    \"data_entrada\": \"\
+                2025-07-02\"\n  },\n  {\n    \"armazem_documento\": \"00163083000130\"\
+                ,\n    \"codigo\": \"7004009002345\",\n    \"lote\": \"LT-2792\",\n\
+                \    \"nf_entrada\": \"297471\",\n    \"nf_ag\": \"9245\",\n    \"\
+                data_entrada\": \"2025-07-19\"\n  },\n  {\n    \"armazem_documento\"\
+                : \"00163083000130\",\n    \"codigo\": \"5001007003456\",\n    \"\
+                lote\": \"LT-2621\",\n    \"nf_entrada\": \"757581\",\n    \"nf_ag\"\
+                : \"7761\",\n    \"data_entrada\": \"2025-07-13\"\n  }\n]"
+        required: true
+      responses:
+        '200':
+          description: Sucesso
+        '400':
+          description: Erro de validação
+        '401':
+          description: Não autorizado
+      summary: POST /ag-control/v1/confirmar_recebimento
+  /ag-control/v1/entrada:
+    post:
+      requestBody:
+        content:
+          application/json:
+            example:
+              raw: "[\n  {\n    \"destinatario\": {\n      \"nome\": \"Supermercado\
+                \ Terra Nova\",\n      \"documento\": \"00.005.076/0001-00\",\n  \
+                \    \"tipo_parceiro\": \"CLIENTE\",\n      \"endereco\": {\n    \
+                \    \"logradouro\": \"Rua Central\",\n        \"numero\": \"643\"\
+                ,\n        \"complemento\": \"\",\n        \"bairro\": \"Industrial\"\
+                ,\n        \"cep\": \"81369-822\",\n        \"cidade\": \"Maringá\"\
+                ,\n        \"uf\": \"PR\",\n        \"pais\": \"BRASIL\",\n      \
+                \  \"latitude\": \"-26.863327\",\n        \"longitude\": \"-51.084092\"\
+                \n      },\n      \"email\": \"unidade2@mercadoterranova.com.br\"\n\
+                \    },\n    \"embarque\": {\n      \"armazem_documento\": \"00163083000130\"\
+                ,\n      \"nf_entrada\": \"409554\",\n      \"data_emissao\": \"2025-07-07\"\
+                ,\n      \"itens\": [\n        {\n          \"codigo\": \"6003008007890\"\
+                ,\n          \"descricao\": \"MILHO HÍBRIDO SEMEADURA 20KG\",\n  \
+                \        \"unidade\": \"KG\",\n          \"quantidade\": \"1393\"\
+                ,\n          \"lote\": \"LT-0747\",\n          \"data_fabricacao\"\
+                : \"2025-06-07\",\n          \"data_vencimento\": \"2025-06-07\",\n\
+                \          \"valor_unitario\": \"160.0\"\n        }\n      ]\n   \
+                \ }\n  },\n  {\n    \"destinatario\": {\n      \"nome\": \"Agropecuária\
+                \ União\",\n      \"documento\": \"11.123.456/0001-99\",\n      \"\
+                tipo_parceiro\": \"CLIENTE\",\n      \"endereco\": {\n        \"logradouro\"\
+                : \"Rua Central\",\n        \"numero\": \"19\",\n        \"complemento\"\
+                : \"\",\n        \"bairro\": \"Industrial\",\n        \"cep\": \"\
+                85932-431\",\n        \"cidade\": \"Joinville\",\n        \"uf\":\
+                \ \"SC\",\n        \"pais\": \"BRASIL\",\n        \"latitude\": \"\
+                -25.448022\",\n        \"longitude\": \"-51.362727\"\n      },\n \
+                \     \"email\": \"contato@agrouniao.com.br\"\n    },\n    \"embarque\"\
+                : {\n      \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"266549\",\n      \"data_emissao\": \"2025-07-19\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"5001007003456\",\n       \
+                \   \"descricao\": \"ADUBO NPK 20-20-20 50KG\",\n          \"unidade\"\
+                : \"KG\",\n          \"quantidade\": \"2643\",\n          \"lote\"\
+                : \"LT-6286\",\n          \"data_fabricacao\": \"2025-06-19\",\n \
+                \         \"data_vencimento\": \"2026-06-19\",\n          \"valor_unitario\"\
+                : \"110.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Cooperativa Verde Vale\",\n      \"documento\"\
+                : \"23.456.789/0001-55\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"514\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"85427-599\"\
+                ,\n        \"cidade\": \"Criciúma\",\n        \"uf\": \"SC\",\n  \
+                \      \"pais\": \"BRASIL\",\n        \"latitude\": \"-26.608085\"\
+                ,\n        \"longitude\": \"-50.767885\"\n      },\n      \"email\"\
+                : \"logistica@verdevale.coop.br\"\n    },\n    \"embarque\": {\n \
+                \     \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"275142\",\n      \"data_emissao\": \"2025-07-07\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"6003008007890\",\n       \
+                \   \"descricao\": \"MILHO HÍBRIDO SEMEADURA 20KG\",\n          \"\
+                unidade\": \"KG\",\n          \"quantidade\": \"1440\",\n        \
+                \  \"lote\": \"LT-8080\",\n          \"data_fabricacao\": \"2025-06-07\"\
+                ,\n          \"data_vencimento\": \"2026-06-07\",\n          \"valor_unitario\"\
+                : \"160.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Agro Estrela do Sul\",\n      \"documento\"\
+                : \"33.000.111/0001-77\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"163\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"84524-102\"\
+                ,\n        \"cidade\": \"São Paulo\",\n        \"uf\": \"SP\",\n \
+                \       \"pais\": \"BRASIL\",\n        \"latitude\": \"-27.121176\"\
+                ,\n        \"longitude\": \"-51.2011\"\n      },\n      \"email\"\
+                : \"estrela@agropecuaria.com\"\n    },\n    \"embarque\": {\n    \
+                \  \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"681708\",\n      \"data_emissao\": \"2025-07-17\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"6003008007890\",\n       \
+                \   \"descricao\": \"MILHO HÍBRIDO SEMEADURA 20KG\",\n          \"\
+                unidade\": \"KG\",\n          \"quantidade\": \"701\",\n         \
+                \ \"lote\": \"LT-4418\",\n          \"data_fabricacao\": \"2025-06-17\"\
+                ,\n          \"data_vencimento\": \"2026-06-17\",\n          \"valor_unitario\"\
+                : \"160.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Grupo Agrícola São Bento\",\n      \"documento\"\
+                : \"44.321.654/0001-88\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"671\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"80342-116\"\
+                ,\n        \"cidade\": \"Bauru\",\n        \"uf\": \"SP\",\n     \
+                \   \"pais\": \"BRASIL\",\n        \"latitude\": \"-26.885477\",\n\
+                \        \"longitude\": \"-51.099042\"\n      },\n      \"email\"\
+                : \"sac@saobentoagro.com.br\"\n    },\n    \"embarque\": {\n     \
+                \ \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"136902\",\n      \"data_emissao\": \"2025-07-02\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"5001007003456\",\n       \
+                \   \"descricao\": \"ADUBO NPK 20-20-20 50KG\",\n          \"unidade\"\
+                : \"KG\",\n          \"quantidade\": \"1609\",\n          \"lote\"\
+                : \"LT-6461\",\n          \"data_fabricacao\": \"2025-06-02\",\n \
+                \         \"data_vencimento\": \"2026-06-02\",\n          \"valor_unitario\"\
+                : \"110.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Rede Max Alimentos\",\n      \"documento\"\
+                : \"55.789.123/0001-66\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"336\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"86102-519\"\
+                ,\n        \"cidade\": \"Joinville\",\n        \"uf\": \"SC\",\n \
+                \       \"pais\": \"BRASIL\",\n        \"latitude\": \"-25.979882\"\
+                ,\n        \"longitude\": \"-49.543252\"\n      },\n      \"email\"\
+                : \"compras@redemax.com\"\n    },\n    \"embarque\": {\n      \"armazem_documento\"\
+                : \"00163083000130\",\n      \"nf_entrada\": \"871630\",\n      \"\
+                data_emissao\": \"2025-07-18\",\n      \"itens\": [\n        {\n \
+                \         \"codigo\": \"4002006005678\",\n          \"descricao\"\
+                : \"HERBICIDA TOXIN 10L\",\n          \"unidade\": \"L\",\n      \
+                \    \"quantidade\": \"2115\",\n          \"lote\": \"LT-8943\",\n\
+                \          \"data_fabricacao\": \"2025-06-18\",\n          \"data_vencimento\"\
+                : \"2026-06-18\",\n          \"valor_unitario\": \"225.0\"\n     \
+                \   }\n      ]\n    }\n  },\n  {\n    \"destinatario\": {\n      \"\
+                nome\": \"Distribuidora Campo Forte\",\n      \"documento\": \"66.321.987/0001-22\"\
+                ,\n      \"tipo_parceiro\": \"CLIENTE\",\n      \"endereco\": {\n\
+                \        \"logradouro\": \"Rua Central\",\n        \"numero\": \"\
+                524\",\n        \"complemento\": \"\",\n        \"bairro\": \"Industrial\"\
+                ,\n        \"cep\": \"80454-514\",\n        \"cidade\": \"Bauru\"\
+                ,\n        \"uf\": \"SP\",\n        \"pais\": \"BRASIL\",\n      \
+                \  \"latitude\": \"-27.505874\",\n        \"longitude\": \"-49.791114\"\
+                \n      },\n      \"email\": \"pedido@campoforte.com.br\"\n    },\n\
+                \    \"embarque\": {\n      \"armazem_documento\": \"00163083000130\"\
+                ,\n      \"nf_entrada\": \"805503\",\n      \"data_emissao\": \"2025-07-22\"\
+                ,\n      \"itens\": [\n        {\n          \"codigo\": \"7004009002345\"\
+                ,\n          \"descricao\": \"GLIFOSATO PREMIUM 20L\",\n         \
+                \ \"unidade\": \"L\",\n          \"quantidade\": \"2453\",\n     \
+                \     \"lote\": \"LT-7805\",\n          \"data_fabricacao\": \"2025-06-22\"\
+                ,\n          \"data_vencimento\": \"2025-06-02\",\n          \"valor_unitario\"\
+                : \"180.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Fazenda Rio Branco\",\n      \"documento\"\
+                : \"77.000.555/0001-33\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"401\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"80644-727\"\
+                ,\n        \"cidade\": \"Cascavel\",\n        \"uf\": \"PR\",\n  \
+                \      \"pais\": \"BRASIL\",\n        \"latitude\": \"-25.966914\"\
+                ,\n        \"longitude\": \"-48.453267\"\n      },\n      \"email\"\
+                : \"rio.branco@fazendas.com\"\n    },\n    \"embarque\": {\n     \
+                \ \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"595242\",\n      \"data_emissao\": \"2025-07-19\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"7004009002345\",\n       \
+                \   \"descricao\": \"GLIFOSATO PREMIUM 20L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"2280\",\n          \"lote\"\
+                : \"LT-5408\",\n          \"data_fabricacao\": \"2025-06-19\",\n \
+                \         \"data_vencimento\": \"2026-06-19\",\n          \"valor_unitario\"\
+                : \"180.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Atacado Boi Gordo\",\n      \"documento\":\
+                \ \"88.888.111/0001-44\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"326\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"86171-431\"\
+                ,\n        \"cidade\": \"Londrina\",\n        \"uf\": \"PR\",\n  \
+                \      \"pais\": \"BRASIL\",\n        \"latitude\": \"-28.93573\"\
+                ,\n        \"longitude\": \"-50.682806\"\n      },\n      \"email\"\
+                : \"boigordo@atacado.com\"\n    },\n    \"embarque\": {\n      \"\
+                armazem_documento\": \"00163083000130\",\n      \"nf_entrada\": \"\
+                844511\",\n      \"data_emissao\": \"2025-07-19\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"7004009002345\",\n       \
+                \   \"descricao\": \"GLIFOSATO PREMIUM 20L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"1321\",\n          \"lote\"\
+                : \"LT-1232\",\n          \"data_fabricacao\": \"2025-06-19\",\n \
+                \         \"data_vencimento\": \"2026-06-19\",\n          \"valor_unitario\"\
+                : \"180.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Coop Agro Brasil\",\n      \"documento\": \"\
+                99.999.222/0001-55\",\n      \"tipo_parceiro\": \"CLIENTE\",\n   \
+                \   \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n  \
+                \      \"numero\": \"478\",\n        \"complemento\": \"\",\n    \
+                \    \"bairro\": \"Industrial\",\n        \"cep\": \"83317-743\",\n\
+                \        \"cidade\": \"Cascavel\",\n        \"uf\": \"PR\",\n    \
+                \    \"pais\": \"BRASIL\",\n        \"latitude\": \"-26.991046\",\n\
+                \        \"longitude\": \"-50.290189\"\n      },\n      \"email\"\
+                : \"cooperativa@agrobrasil.com.br\"\n    },\n    \"embarque\": {\n\
+                \      \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"758781\",\n      \"data_emissao\": \"2025-07-03\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"7004009002345\",\n       \
+                \   \"descricao\": \"GLIFOSATO PREMIUM 20L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"2342\",\n          \"lote\"\
+                : \"LT-4292\",\n          \"data_fabricacao\": \"2025-06-03\",\n \
+                \         \"data_vencimento\": \"2026-06-03\",\n          \"valor_unitario\"\
+                : \"180.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Supermercado Terra Nova\",\n      \"documento\"\
+                : \"00.005.076/0001-00\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"180\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"87239-822\"\
+                ,\n        \"cidade\": \"São Paulo\",\n        \"uf\": \"SP\",\n \
+                \       \"pais\": \"BRASIL\",\n        \"latitude\": \"-27.762794\"\
+                ,\n        \"longitude\": \"-50.674659\"\n      },\n      \"email\"\
+                : \"unidade2@mercadoterranova.com.br\"\n    },\n    \"embarque\":\
+                \ {\n      \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"960999\",\n      \"data_emissao\": \"2025-07-19\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"5001007003456\",\n       \
+                \   \"descricao\": \"ADUBO NPK 20-20-20 50KG\",\n          \"unidade\"\
+                : \"KG\",\n          \"quantidade\": \"1473\",\n          \"lote\"\
+                : \"LT-8116\",\n          \"data_fabricacao\": \"2025-06-19\",\n \
+                \         \"data_vencimento\": \"2026-06-19\",\n          \"valor_unitario\"\
+                : \"110.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Agropecuária União\",\n      \"documento\"\
+                : \"11.123.456/0001-99\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"472\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"85769-874\"\
+                ,\n        \"cidade\": \"Curitiba\",\n        \"uf\": \"PR\",\n  \
+                \      \"pais\": \"BRASIL\",\n        \"latitude\": \"-28.716697\"\
+                ,\n        \"longitude\": \"-49.725232\"\n      },\n      \"email\"\
+                : \"contato@agrouniao.com.br\"\n    },\n    \"embarque\": {\n    \
+                \  \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"985933\",\n      \"data_emissao\": \"2025-07-15\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"7004009002345\",\n       \
+                \   \"descricao\": \"GLIFOSATO PREMIUM 20L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"2671\",\n          \"lote\"\
+                : \"LT-8387\",\n          \"data_fabricacao\": \"2025-06-15\",\n \
+                \         \"data_vencimento\": \"2026-06-15\",\n          \"valor_unitario\"\
+                : \"180.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Cooperativa Verde Vale\",\n      \"documento\"\
+                : \"23.456.789/0001-55\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"563\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"80087-696\"\
+                ,\n        \"cidade\": \"Blumenau\",\n        \"uf\": \"SC\",\n  \
+                \      \"pais\": \"BRASIL\",\n        \"latitude\": \"-27.063438\"\
+                ,\n        \"longitude\": \"-49.6951\"\n      },\n      \"email\"\
+                : \"logistica@verdevale.coop.br\"\n    },\n    \"embarque\": {\n \
+                \     \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"141765\",\n      \"data_emissao\": \"2025-07-02\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"4001005001234\",\n       \
+                \   \"descricao\": \"FUNGICIDA AGRIMAX 5L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"2206\",\n          \"lote\"\
+                : \"LT-9421\",\n          \"data_fabricacao\": \"2025-06-02\",\n \
+                \         \"data_vencimento\": \"2026-06-02\",\n          \"valor_unitario\"\
+                : \"190.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Agro Estrela do Sul\",\n      \"documento\"\
+                : \"33.000.111/0001-77\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"594\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"88492-765\"\
+                ,\n        \"cidade\": \"Cascavel\",\n        \"uf\": \"PR\",\n  \
+                \      \"pais\": \"BRASIL\",\n        \"latitude\": \"-27.886347\"\
+                ,\n        \"longitude\": \"-50.67862\"\n      },\n      \"email\"\
+                : \"estrela@agropecuaria.com\"\n    },\n    \"embarque\": {\n    \
+                \  \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"394731\",\n      \"data_emissao\": \"2025-07-13\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"6003008007890\",\n       \
+                \   \"descricao\": \"MILHO HÍBRIDO SEMEADURA 20KG\",\n          \"\
+                unidade\": \"KG\",\n          \"quantidade\": \"560\",\n         \
+                \ \"lote\": \"LT-3973\",\n          \"data_fabricacao\": \"2025-06-13\"\
+                ,\n          \"data_vencimento\": \"2025-06-17\",\n          \"valor_unitario\"\
+                : \"160.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Grupo Agrícola São Bento\",\n      \"documento\"\
+                : \"44.321.654/0001-88\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"859\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"84942-997\"\
+                ,\n        \"cidade\": \"Blumenau\",\n        \"uf\": \"SC\",\n  \
+                \      \"pais\": \"BRASIL\",\n        \"latitude\": \"-28.712362\"\
+                ,\n        \"longitude\": \"-48.648604\"\n      },\n      \"email\"\
+                : \"sac@saobentoagro.com.br\"\n    },\n    \"embarque\": {\n     \
+                \ \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"355272\",\n      \"data_emissao\": \"2025-07-07\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"5001007003456\",\n       \
+                \   \"descricao\": \"ADUBO NPK 20-20-20 50KG\",\n          \"unidade\"\
+                : \"KG\",\n          \"quantidade\": \"2449\",\n          \"lote\"\
+                : \"LT-8290\",\n          \"data_fabricacao\": \"2025-06-07\",\n \
+                \         \"data_vencimento\": \"2025-06-06\",\n          \"valor_unitario\"\
+                : \"110.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Rede Max Alimentos\",\n      \"documento\"\
+                : \"55.789.123/0001-66\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"429\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"84699-610\"\
+                ,\n        \"cidade\": \"Ribeirão Preto\",\n        \"uf\": \"SP\"\
+                ,\n        \"pais\": \"BRASIL\",\n        \"latitude\": \"-26.822733\"\
+                ,\n        \"longitude\": \"-51.935309\"\n      },\n      \"email\"\
+                : \"compras@redemax.com\"\n    },\n    \"embarque\": {\n      \"armazem_documento\"\
+                : \"00163083000130\",\n      \"nf_entrada\": \"649397\",\n      \"\
+                data_emissao\": \"2025-07-04\",\n      \"itens\": [\n        {\n \
+                \         \"codigo\": \"4001005001234\",\n          \"descricao\"\
+                : \"FUNGICIDA AGRIMAX 5L\",\n          \"unidade\": \"L\",\n     \
+                \     \"quantidade\": \"2704\",\n          \"lote\": \"LT-5799\",\n\
+                \          \"data_fabricacao\": \"2025-06-04\",\n          \"data_vencimento\"\
+                : \"2026-06-04\",\n          \"valor_unitario\": \"190.0\"\n     \
+                \   }\n      ]\n    }\n  },\n  {\n    \"destinatario\": {\n      \"\
+                nome\": \"Distribuidora Campo Forte\",\n      \"documento\": \"66.321.987/0001-22\"\
+                ,\n      \"tipo_parceiro\": \"CLIENTE\",\n      \"endereco\": {\n\
+                \        \"logradouro\": \"Rua Central\",\n        \"numero\": \"\
+                474\",\n        \"complemento\": \"\",\n        \"bairro\": \"Industrial\"\
+                ,\n        \"cep\": \"80444-836\",\n        \"cidade\": \"São Paulo\"\
+                ,\n        \"uf\": \"SP\",\n        \"pais\": \"BRASIL\",\n      \
+                \  \"latitude\": \"-25.790267\",\n        \"longitude\": \"-49.45077\"\
+                \n      },\n      \"email\": \"pedido@campoforte.com.br\"\n    },\n\
+                \    \"embarque\": {\n      \"armazem_documento\": \"00163083000130\"\
+                ,\n      \"nf_entrada\": \"995373\",\n      \"data_emissao\": \"2025-07-18\"\
+                ,\n      \"itens\": [\n        {\n          \"codigo\": \"4002006005678\"\
+                ,\n          \"descricao\": \"HERBICIDA TOXIN 10L\",\n          \"\
+                unidade\": \"L\",\n          \"quantidade\": \"2754\",\n         \
+                \ \"lote\": \"LT-7858\",\n          \"data_fabricacao\": \"2025-06-18\"\
+                ,\n          \"data_vencimento\": \"2026-06-18\",\n          \"valor_unitario\"\
+                : \"225.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Fazenda Rio Branco\",\n      \"documento\"\
+                : \"77.000.555/0001-33\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"240\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"85931-285\"\
+                ,\n        \"cidade\": \"Chapecó\",\n        \"uf\": \"SC\",\n   \
+                \     \"pais\": \"BRASIL\",\n        \"latitude\": \"-27.003766\"\
+                ,\n        \"longitude\": \"-49.311918\"\n      },\n      \"email\"\
+                : \"rio.branco@fazendas.com\"\n    },\n    \"embarque\": {\n     \
+                \ \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"131736\",\n      \"data_emissao\": \"2025-07-18\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"4001005001234\",\n       \
+                \   \"descricao\": \"FUNGICIDA AGRIMAX 5L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"2863\",\n          \"lote\"\
+                : \"LT-7609\",\n          \"data_fabricacao\": \"2025-06-18\",\n \
+                \         \"data_vencimento\": \"2026-06-18\",\n          \"valor_unitario\"\
+                : \"190.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Atacado Boi Gordo\",\n      \"documento\":\
+                \ \"88.888.111/0001-44\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"515\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"88607-672\"\
+                ,\n        \"cidade\": \"Cascavel\",\n        \"uf\": \"PR\",\n  \
+                \      \"pais\": \"BRASIL\",\n        \"latitude\": \"-26.111707\"\
+                ,\n        \"longitude\": \"-49.825685\"\n      },\n      \"email\"\
+                : \"boigordo@atacado.com\"\n    },\n    \"embarque\": {\n      \"\
+                armazem_documento\": \"00163083000130\",\n      \"nf_entrada\": \"\
+                854425\",\n      \"data_emissao\": \"2025-07-01\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"4001005001234\",\n       \
+                \   \"descricao\": \"FUNGICIDA AGRIMAX 5L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"962\",\n          \"lote\":\
+                \ \"LT-4486\",\n          \"data_fabricacao\": \"2025-06-01\",\n \
+                \         \"data_vencimento\": \"2026-06-01\",\n          \"valor_unitario\"\
+                : \"190.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Coop Agro Brasil\",\n      \"documento\": \"\
+                99.999.222/0001-55\",\n      \"tipo_parceiro\": \"CLIENTE\",\n   \
+                \   \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n  \
+                \      \"numero\": \"319\",\n        \"complemento\": \"\",\n    \
+                \    \"bairro\": \"Industrial\",\n        \"cep\": \"87912-105\",\n\
+                \        \"cidade\": \"Londrina\",\n        \"uf\": \"PR\",\n    \
+                \    \"pais\": \"BRASIL\",\n        \"latitude\": \"-26.341471\",\n\
+                \        \"longitude\": \"-51.540698\"\n      },\n      \"email\"\
+                : \"cooperativa@agrobrasil.com.br\"\n    },\n    \"embarque\": {\n\
+                \      \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"730908\",\n      \"data_emissao\": \"2025-07-08\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"7004009002345\",\n       \
+                \   \"descricao\": \"GLIFOSATO PREMIUM 20L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"2078\",\n          \"lote\"\
+                : \"LT-3775\",\n          \"data_fabricacao\": \"2025-06-08\",\n \
+                \         \"data_vencimento\": \"2025-06-06\",\n          \"valor_unitario\"\
+                : \"180.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Supermercado Terra Nova\",\n      \"documento\"\
+                : \"00.005.076/0001-00\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"964\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"80204-667\"\
+                ,\n        \"cidade\": \"Cascavel\",\n        \"uf\": \"PR\",\n  \
+                \      \"pais\": \"BRASIL\",\n        \"latitude\": \"-26.573121\"\
+                ,\n        \"longitude\": \"-50.876779\"\n      },\n      \"email\"\
+                : \"unidade2@mercadoterranova.com.br\"\n    },\n    \"embarque\":\
+                \ {\n      \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"234113\",\n      \"data_emissao\": \"2025-07-17\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"5001007003456\",\n       \
+                \   \"descricao\": \"ADUBO NPK 20-20-20 50KG\",\n          \"unidade\"\
+                : \"KG\",\n          \"quantidade\": \"621\",\n          \"lote\"\
+                : \"LT-3274\",\n          \"data_fabricacao\": \"2025-06-17\",\n \
+                \         \"data_vencimento\": \"2026-06-17\",\n          \"valor_unitario\"\
+                : \"110.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Agropecuária União\",\n      \"documento\"\
+                : \"11.123.456/0001-99\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"579\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"88004-104\"\
+                ,\n        \"cidade\": \"Chapecó\",\n        \"uf\": \"SC\",\n   \
+                \     \"pais\": \"BRASIL\",\n        \"latitude\": \"-28.227646\"\
+                ,\n        \"longitude\": \"-50.064136\"\n      },\n      \"email\"\
+                : \"contato@agrouniao.com.br\"\n    },\n    \"embarque\": {\n    \
+                \  \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"297471\",\n      \"data_emissao\": \"2025-07-16\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"7004009002345\",\n       \
+                \   \"descricao\": \"GLIFOSATO PREMIUM 20L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"608\",\n          \"lote\":\
+                \ \"LT-2792\",\n          \"data_fabricacao\": \"2025-06-16\",\n \
+                \         \"data_vencimento\": \"2026-06-16\",\n          \"valor_unitario\"\
+                : \"180.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Cooperativa Verde Vale\",\n      \"documento\"\
+                : \"23.456.789/0001-55\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"248\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"80746-643\"\
+                ,\n        \"cidade\": \"Blumenau\",\n        \"uf\": \"SC\",\n  \
+                \      \"pais\": \"BRASIL\",\n        \"latitude\": \"-28.756659\"\
+                ,\n        \"longitude\": \"-48.612661\"\n      },\n      \"email\"\
+                : \"logistica@verdevale.coop.br\"\n    },\n    \"embarque\": {\n \
+                \     \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"215300\",\n      \"data_emissao\": \"2025-07-01\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"4002006005678\",\n       \
+                \   \"descricao\": \"HERBICIDA TOXIN 10L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"1992\",\n          \"lote\"\
+                : \"LT-9950\",\n          \"data_fabricacao\": \"2025-06-01\",\n \
+                \         \"data_vencimento\": \"2026-06-01\",\n          \"valor_unitario\"\
+                : \"225.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Agro Estrela do Sul\",\n      \"documento\"\
+                : \"33.000.111/0001-77\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"703\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"88800-320\"\
+                ,\n        \"cidade\": \"Curitiba\",\n        \"uf\": \"PR\",\n  \
+                \      \"pais\": \"BRASIL\",\n        \"latitude\": \"-25.738177\"\
+                ,\n        \"longitude\": \"-51.105939\"\n      },\n      \"email\"\
+                : \"estrela@agropecuaria.com\"\n    },\n    \"embarque\": {\n    \
+                \  \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"445627\",\n      \"data_emissao\": \"2025-07-06\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"4001005001234\",\n       \
+                \   \"descricao\": \"FUNGICIDA AGRIMAX 5L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"1216\",\n          \"lote\"\
+                : \"LT-6484\",\n          \"data_fabricacao\": \"2025-06-06\",\n \
+                \         \"data_vencimento\": \"2025-06-23\",\n          \"valor_unitario\"\
+                : \"190.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Grupo Agrícola São Bento\",\n      \"documento\"\
+                : \"44.321.654/0001-88\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"789\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"84963-192\"\
+                ,\n        \"cidade\": \"Maringá\",\n        \"uf\": \"PR\",\n   \
+                \     \"pais\": \"BRASIL\",\n        \"latitude\": \"-27.370111\"\
+                ,\n        \"longitude\": \"-48.833611\"\n      },\n      \"email\"\
+                : \"sac@saobentoagro.com.br\"\n    },\n    \"embarque\": {\n     \
+                \ \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"169804\",\n      \"data_emissao\": \"2025-07-10\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"7004009002345\",\n       \
+                \   \"descricao\": \"GLIFOSATO PREMIUM 20L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"1533\",\n          \"lote\"\
+                : \"LT-1651\",\n          \"data_fabricacao\": \"2025-06-10\",\n \
+                \         \"data_vencimento\": \"2025-06-28\",\n          \"valor_unitario\"\
+                : \"180.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Rede Max Alimentos\",\n      \"documento\"\
+                : \"55.789.123/0001-66\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"938\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"80759-171\"\
+                ,\n        \"cidade\": \"São Paulo\",\n        \"uf\": \"SP\",\n \
+                \       \"pais\": \"BRASIL\",\n        \"latitude\": \"-26.789926\"\
+                ,\n        \"longitude\": \"-51.081059\"\n      },\n      \"email\"\
+                : \"compras@redemax.com\"\n    },\n    \"embarque\": {\n      \"armazem_documento\"\
+                : \"00163083000130\",\n      \"nf_entrada\": \"792643\",\n      \"\
+                data_emissao\": \"2025-07-12\",\n      \"itens\": [\n        {\n \
+                \         \"codigo\": \"4001005001234\",\n          \"descricao\"\
+                : \"FUNGICIDA AGRIMAX 5L\",\n          \"unidade\": \"L\",\n     \
+                \     \"quantidade\": \"537\",\n          \"lote\": \"LT-8302\",\n\
+                \          \"data_fabricacao\": \"2025-06-12\",\n          \"data_vencimento\"\
+                : \"2025-06-16\",\n          \"valor_unitario\": \"190.0\"\n     \
+                \   }\n      ]\n    }\n  },\n  {\n    \"destinatario\": {\n      \"\
+                nome\": \"Distribuidora Campo Forte\",\n      \"documento\": \"66.321.987/0001-22\"\
+                ,\n      \"tipo_parceiro\": \"CLIENTE\",\n      \"endereco\": {\n\
+                \        \"logradouro\": \"Rua Central\",\n        \"numero\": \"\
+                377\",\n        \"complemento\": \"\",\n        \"bairro\": \"Industrial\"\
+                ,\n        \"cep\": \"89696-116\",\n        \"cidade\": \"Campinas\"\
+                ,\n        \"uf\": \"SP\",\n        \"pais\": \"BRASIL\",\n      \
+                \  \"latitude\": \"-26.224452\",\n        \"longitude\": \"-51.243166\"\
+                \n      },\n      \"email\": \"pedido@campoforte.com.br\"\n    },\n\
+                \    \"embarque\": {\n      \"armazem_documento\": \"00163083000130\"\
+                ,\n      \"nf_entrada\": \"222440\",\n      \"data_emissao\": \"2025-07-12\"\
+                ,\n      \"itens\": [\n        {\n          \"codigo\": \"4001005001234\"\
+                ,\n          \"descricao\": \"FUNGICIDA AGRIMAX 5L\",\n          \"\
+                unidade\": \"L\",\n          \"quantidade\": \"2837\",\n         \
+                \ \"lote\": \"LT-7417\",\n          \"data_fabricacao\": \"2025-06-12\"\
+                ,\n          \"data_vencimento\": \"2026-06-12\",\n          \"valor_unitario\"\
+                : \"190.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Fazenda Rio Branco\",\n      \"documento\"\
+                : \"77.000.555/0001-33\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"712\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"80467-631\"\
+                ,\n        \"cidade\": \"Curitiba\",\n        \"uf\": \"PR\",\n  \
+                \      \"pais\": \"BRASIL\",\n        \"latitude\": \"-28.644877\"\
+                ,\n        \"longitude\": \"-51.588765\"\n      },\n      \"email\"\
+                : \"rio.branco@fazendas.com\"\n    },\n    \"embarque\": {\n     \
+                \ \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"975223\",\n      \"data_emissao\": \"2025-07-08\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"4002006005678\",\n       \
+                \   \"descricao\": \"HERBICIDA TOXIN 10L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"1734\",\n          \"lote\"\
+                : \"LT-2319\",\n          \"data_fabricacao\": \"2025-06-08\",\n \
+                \         \"data_vencimento\": \"2026-06-08\",\n          \"valor_unitario\"\
+                : \"225.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Atacado Boi Gordo\",\n      \"documento\":\
+                \ \"88.888.111/0001-44\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"832\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"81958-746\"\
+                ,\n        \"cidade\": \"São Paulo\",\n        \"uf\": \"SP\",\n \
+                \       \"pais\": \"BRASIL\",\n        \"latitude\": \"-26.661353\"\
+                ,\n        \"longitude\": \"-48.483108\"\n      },\n      \"email\"\
+                : \"boigordo@atacado.com\"\n    },\n    \"embarque\": {\n      \"\
+                armazem_documento\": \"00163083000130\",\n      \"nf_entrada\": \"\
+                757581\",\n      \"data_emissao\": \"2025-07-08\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"5001007003456\",\n       \
+                \   \"descricao\": \"ADUBO NPK 20-20-20 50KG\",\n          \"unidade\"\
+                : \"KG\",\n          \"quantidade\": \"616\",\n          \"lote\"\
+                : \"LT-2621\",\n          \"data_fabricacao\": \"2025-06-08\",\n \
+                \         \"data_vencimento\": \"2026-06-08\",\n          \"valor_unitario\"\
+                : \"110.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Coop Agro Brasil\",\n      \"documento\": \"\
+                99.999.222/0001-55\",\n      \"tipo_parceiro\": \"CLIENTE\",\n   \
+                \   \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n  \
+                \      \"numero\": \"719\",\n        \"complemento\": \"\",\n    \
+                \    \"bairro\": \"Industrial\",\n        \"cep\": \"81265-180\",\n\
+                \        \"cidade\": \"Chapecó\",\n        \"uf\": \"SC\",\n     \
+                \   \"pais\": \"BRASIL\",\n        \"latitude\": \"-27.344208\",\n\
+                \        \"longitude\": \"-50.177765\"\n      },\n      \"email\"\
+                : \"cooperativa@agrobrasil.com.br\"\n    },\n    \"embarque\": {\n\
+                \      \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"566687\",\n      \"data_emissao\": \"2025-07-12\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"4001005001234\",\n       \
+                \   \"descricao\": \"FUNGICIDA AGRIMAX 5L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"1366\",\n          \"lote\"\
+                : \"LT-7575\",\n          \"data_fabricacao\": \"2025-06-12\",\n \
+                \         \"data_vencimento\": \"2026-06-12\",\n          \"valor_unitario\"\
+                : \"190.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Supermercado Terra Nova\",\n      \"documento\"\
+                : \"00.005.076/0001-00\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"53\",\n        \"complemento\": \"\",\n   \
+                \     \"bairro\": \"Industrial\",\n        \"cep\": \"85701-422\"\
+                ,\n        \"cidade\": \"Bauru\",\n        \"uf\": \"SP\",\n     \
+                \   \"pais\": \"BRASIL\",\n        \"latitude\": \"-25.328023\",\n\
+                \        \"longitude\": \"-49.178137\"\n      },\n      \"email\"\
+                : \"unidade2@mercadoterranova.com.br\"\n    },\n    \"embarque\":\
+                \ {\n      \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"720272\",\n      \"data_emissao\": \"2025-07-17\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"4001005001234\",\n       \
+                \   \"descricao\": \"FUNGICIDA AGRIMAX 5L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"387\",\n          \"lote\":\
+                \ \"LT-1032\",\n          \"data_fabricacao\": \"2025-06-17\",\n \
+                \         \"data_vencimento\": \"2026-06-17\",\n          \"valor_unitario\"\
+                : \"190.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Agropecuária União\",\n      \"documento\"\
+                : \"11.123.456/0001-99\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"762\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"85085-212\"\
+                ,\n        \"cidade\": \"Ribeirão Preto\",\n        \"uf\": \"SP\"\
+                ,\n        \"pais\": \"BRASIL\",\n        \"latitude\": \"-28.96077\"\
+                ,\n        \"longitude\": \"-50.637803\"\n      },\n      \"email\"\
+                : \"contato@agrouniao.com.br\"\n    },\n    \"embarque\": {\n    \
+                \  \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"752778\",\n      \"data_emissao\": \"2025-07-20\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"6003008007890\",\n       \
+                \   \"descricao\": \"MILHO HÍBRIDO SEMEADURA 20KG\",\n          \"\
+                unidade\": \"KG\",\n          \"quantidade\": \"1169\",\n        \
+                \  \"lote\": \"LT-6223\",\n          \"data_fabricacao\": \"2025-06-20\"\
+                ,\n          \"data_vencimento\": \"2026-06-20\",\n          \"valor_unitario\"\
+                : \"160.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Cooperativa Verde Vale\",\n      \"documento\"\
+                : \"23.456.789/0001-55\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"880\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"86624-693\"\
+                ,\n        \"cidade\": \"São Paulo\",\n        \"uf\": \"SP\",\n \
+                \       \"pais\": \"BRASIL\",\n        \"latitude\": \"-28.307161\"\
+                ,\n        \"longitude\": \"-49.716315\"\n      },\n      \"email\"\
+                : \"logistica@verdevale.coop.br\"\n    },\n    \"embarque\": {\n \
+                \     \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"840398\",\n      \"data_emissao\": \"2025-07-04\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"5001007003456\",\n       \
+                \   \"descricao\": \"ADUBO NPK 20-20-20 50KG\",\n          \"unidade\"\
+                : \"KG\",\n          \"quantidade\": \"564\",\n          \"lote\"\
+                : \"LT-9800\",\n          \"data_fabricacao\": \"2025-06-04\",\n \
+                \         \"data_vencimento\": \"2026-06-04\",\n          \"valor_unitario\"\
+                : \"110.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Agro Estrela do Sul\",\n      \"documento\"\
+                : \"33.000.111/0001-77\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"52\",\n        \"complemento\": \"\",\n   \
+                \     \"bairro\": \"Industrial\",\n        \"cep\": \"85096-620\"\
+                ,\n        \"cidade\": \"São Paulo\",\n        \"uf\": \"SP\",\n \
+                \       \"pais\": \"BRASIL\",\n        \"latitude\": \"-28.798026\"\
+                ,\n        \"longitude\": \"-48.449669\"\n      },\n      \"email\"\
+                : \"estrela@agropecuaria.com\"\n    },\n    \"embarque\": {\n    \
+                \  \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"574799\",\n      \"data_emissao\": \"2025-07-08\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"4002006005678\",\n       \
+                \   \"descricao\": \"HERBICIDA TOXIN 10L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"1223\",\n          \"lote\"\
+                : \"LT-6481\",\n          \"data_fabricacao\": \"2025-06-08\",\n \
+                \         \"data_vencimento\": \"2025-06-06\",\n          \"valor_unitario\"\
+                : \"225.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Grupo Agrícola São Bento\",\n      \"documento\"\
+                : \"44.321.654/0001-88\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"804\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"89472-667\"\
+                ,\n        \"cidade\": \"Joinville\",\n        \"uf\": \"SC\",\n \
+                \       \"pais\": \"BRASIL\",\n        \"latitude\": \"-27.485343\"\
+                ,\n        \"longitude\": \"-49.11642\"\n      },\n      \"email\"\
+                : \"sac@saobentoagro.com.br\"\n    },\n    \"embarque\": {\n     \
+                \ \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"243114\",\n      \"data_emissao\": \"2025-07-21\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"4002006005678\",\n       \
+                \   \"descricao\": \"HERBICIDA TOXIN 10L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"2286\",\n          \"lote\"\
+                : \"LT-9105\",\n          \"data_fabricacao\": \"2025-06-21\",\n \
+                \         \"data_vencimento\": \"2025-06-09\",\n          \"valor_unitario\"\
+                : \"225.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Rede Max Alimentos\",\n      \"documento\"\
+                : \"55.789.123/0001-66\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"612\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"81243-229\"\
+                ,\n        \"cidade\": \"Blumenau\",\n        \"uf\": \"SC\",\n  \
+                \      \"pais\": \"BRASIL\",\n        \"latitude\": \"-28.969014\"\
+                ,\n        \"longitude\": \"-49.264051\"\n      },\n      \"email\"\
+                : \"compras@redemax.com\"\n    },\n    \"embarque\": {\n      \"armazem_documento\"\
+                : \"00163083000130\",\n      \"nf_entrada\": \"305500\",\n      \"\
+                data_emissao\": \"2025-07-22\",\n      \"itens\": [\n        {\n \
+                \         \"codigo\": \"4002006005678\",\n          \"descricao\"\
+                : \"HERBICIDA TOXIN 10L\",\n          \"unidade\": \"L\",\n      \
+                \    \"quantidade\": \"2248\",\n          \"lote\": \"LT-5830\",\n\
+                \          \"data_fabricacao\": \"2025-06-22\",\n          \"data_vencimento\"\
+                : \"2025-06-06\",\n          \"valor_unitario\": \"225.0\"\n     \
+                \   }\n      ]\n    }\n  },\n  {\n    \"destinatario\": {\n      \"\
+                nome\": \"Distribuidora Campo Forte\",\n      \"documento\": \"66.321.987/0001-22\"\
+                ,\n      \"tipo_parceiro\": \"CLIENTE\",\n      \"endereco\": {\n\
+                \        \"logradouro\": \"Rua Central\",\n        \"numero\": \"\
+                134\",\n        \"complemento\": \"\",\n        \"bairro\": \"Industrial\"\
+                ,\n        \"cep\": \"80742-797\",\n        \"cidade\": \"Cascavel\"\
+                ,\n        \"uf\": \"PR\",\n        \"pais\": \"BRASIL\",\n      \
+                \  \"latitude\": \"-28.075461\",\n        \"longitude\": \"-48.413089\"\
+                \n      },\n      \"email\": \"pedido@campoforte.com.br\"\n    },\n\
+                \    \"embarque\": {\n      \"armazem_documento\": \"00163083000130\"\
+                ,\n      \"nf_entrada\": \"480248\",\n      \"data_emissao\": \"2025-07-04\"\
+                ,\n      \"itens\": [\n        {\n          \"codigo\": \"4001005001234\"\
+                ,\n          \"descricao\": \"FUNGICIDA AGRIMAX 5L\",\n          \"\
+                unidade\": \"L\",\n          \"quantidade\": \"2642\",\n         \
+                \ \"lote\": \"LT-1691\",\n          \"data_fabricacao\": \"2025-06-04\"\
+                ,\n          \"data_vencimento\": \"2026-06-04\",\n          \"valor_unitario\"\
+                : \"190.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Fazenda Rio Branco\",\n      \"documento\"\
+                : \"77.000.555/0001-33\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"390\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"87971-397\"\
+                ,\n        \"cidade\": \"Bauru\",\n        \"uf\": \"SP\",\n     \
+                \   \"pais\": \"BRASIL\",\n        \"latitude\": \"-27.833594\",\n\
+                \        \"longitude\": \"-48.330645\"\n      },\n      \"email\"\
+                : \"rio.branco@fazendas.com\"\n    },\n    \"embarque\": {\n     \
+                \ \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"769622\",\n      \"data_emissao\": \"2025-07-12\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"6003008007890\",\n       \
+                \   \"descricao\": \"MILHO HÍBRIDO SEMEADURA 20KG\",\n          \"\
+                unidade\": \"KG\",\n          \"quantidade\": \"545\",\n         \
+                \ \"lote\": \"LT-8519\",\n          \"data_fabricacao\": \"2025-06-12\"\
+                ,\n          \"data_vencimento\": \"2026-06-12\",\n          \"valor_unitario\"\
+                : \"160.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Atacado Boi Gordo\",\n      \"documento\":\
+                \ \"88.888.111/0001-44\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"237\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"81732-423\"\
+                ,\n        \"cidade\": \"Campinas\",\n        \"uf\": \"SP\",\n  \
+                \      \"pais\": \"BRASIL\",\n        \"latitude\": \"-25.253962\"\
+                ,\n        \"longitude\": \"-48.280431\"\n      },\n      \"email\"\
+                : \"boigordo@atacado.com\"\n    },\n    \"embarque\": {\n      \"\
+                armazem_documento\": \"00163083000130\",\n      \"nf_entrada\": \"\
+                391814\",\n      \"data_emissao\": \"2025-07-22\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"4001005001234\",\n       \
+                \   \"descricao\": \"FUNGICIDA AGRIMAX 5L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"1435\",\n          \"lote\"\
+                : \"LT-1719\",\n          \"data_fabricacao\": \"2025-06-22\",\n \
+                \         \"data_vencimento\": \"2026-06-22\",\n          \"valor_unitario\"\
+                : \"190.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Coop Agro Brasil\",\n      \"documento\": \"\
+                99.999.222/0001-55\",\n      \"tipo_parceiro\": \"CLIENTE\",\n   \
+                \   \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n  \
+                \      \"numero\": \"151\",\n        \"complemento\": \"\",\n    \
+                \    \"bairro\": \"Industrial\",\n        \"cep\": \"83656-168\",\n\
+                \        \"cidade\": \"Ribeirão Preto\",\n        \"uf\": \"SP\",\n\
+                \        \"pais\": \"BRASIL\",\n        \"latitude\": \"-26.408334\"\
+                ,\n        \"longitude\": \"-51.909157\"\n      },\n      \"email\"\
+                : \"cooperativa@agrobrasil.com.br\"\n    },\n    \"embarque\": {\n\
+                \      \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"699491\",\n      \"data_emissao\": \"2025-07-15\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"6003008007890\",\n       \
+                \   \"descricao\": \"MILHO HÍBRIDO SEMEADURA 20KG\",\n          \"\
+                unidade\": \"KG\",\n          \"quantidade\": \"1212\",\n        \
+                \  \"lote\": \"LT-8881\",\n          \"data_fabricacao\": \"2025-06-15\"\
+                ,\n          \"data_vencimento\": \"2026-06-15\",\n          \"valor_unitario\"\
+                : \"160.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Supermercado Terra Nova\",\n      \"documento\"\
+                : \"00.005.076/0001-00\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"881\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"87721-519\"\
+                ,\n        \"cidade\": \"Criciúma\",\n        \"uf\": \"SC\",\n  \
+                \      \"pais\": \"BRASIL\",\n        \"latitude\": \"-27.469855\"\
+                ,\n        \"longitude\": \"-51.969377\"\n      },\n      \"email\"\
+                : \"unidade2@mercadoterranova.com.br\"\n    },\n    \"embarque\":\
+                \ {\n      \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"549589\",\n      \"data_emissao\": \"2025-07-11\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"6003008007890\",\n       \
+                \   \"descricao\": \"MILHO HÍBRIDO SEMEADURA 20KG\",\n          \"\
+                unidade\": \"KG\",\n          \"quantidade\": \"1029\",\n        \
+                \  \"lote\": \"LT-3697\",\n          \"data_fabricacao\": \"2025-06-11\"\
+                ,\n          \"data_vencimento\": \"2026-06-11\",\n          \"valor_unitario\"\
+                : \"160.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Agropecuária União\",\n      \"documento\"\
+                : \"11.123.456/0001-99\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"255\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"84545-770\"\
+                ,\n        \"cidade\": \"São Paulo\",\n        \"uf\": \"SP\",\n \
+                \       \"pais\": \"BRASIL\",\n        \"latitude\": \"-28.437485\"\
+                ,\n        \"longitude\": \"-49.680546\"\n      },\n      \"email\"\
+                : \"contato@agrouniao.com.br\"\n    },\n    \"embarque\": {\n    \
+                \  \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"432640\",\n      \"data_emissao\": \"2025-07-22\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"6003008007890\",\n       \
+                \   \"descricao\": \"MILHO HÍBRIDO SEMEADURA 20KG\",\n          \"\
+                unidade\": \"KG\",\n          \"quantidade\": \"1943\",\n        \
+                \  \"lote\": \"LT-2200\",\n          \"data_fabricacao\": \"2025-06-22\"\
+                ,\n          \"data_vencimento\": \"2025-06-10\",\n          \"valor_unitario\"\
+                : \"160.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Cooperativa Verde Vale\",\n      \"documento\"\
+                : \"23.456.789/0001-55\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"486\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"86889-962\"\
+                ,\n        \"cidade\": \"São Paulo\",\n        \"uf\": \"SP\",\n \
+                \       \"pais\": \"BRASIL\",\n        \"latitude\": \"-26.898879\"\
+                ,\n        \"longitude\": \"-49.994692\"\n      },\n      \"email\"\
+                : \"logistica@verdevale.coop.br\"\n    },\n    \"embarque\": {\n \
+                \     \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"750862\",\n      \"data_emissao\": \"2025-07-09\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"4002006005678\",\n       \
+                \   \"descricao\": \"HERBICIDA TOXIN 10L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"423\",\n          \"lote\":\
+                \ \"LT-6642\",\n          \"data_fabricacao\": \"2025-06-09\",\n \
+                \         \"data_vencimento\": \"2025-06-07\",\n          \"valor_unitario\"\
+                : \"225.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Agro Estrela do Sul\",\n      \"documento\"\
+                : \"33.000.111/0001-77\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"240\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"80162-968\"\
+                ,\n        \"cidade\": \"Campinas\",\n        \"uf\": \"SP\",\n  \
+                \      \"pais\": \"BRASIL\",\n        \"latitude\": \"-28.858442\"\
+                ,\n        \"longitude\": \"-50.833372\"\n      },\n      \"email\"\
+                : \"estrela@agropecuaria.com\"\n    },\n    \"embarque\": {\n    \
+                \  \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"289575\",\n      \"data_emissao\": \"2025-07-07\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"4001005001234\",\n       \
+                \   \"descricao\": \"FUNGICIDA AGRIMAX 5L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"1719\",\n          \"lote\"\
+                : \"LT-6571\",\n          \"data_fabricacao\": \"2025-06-07\",\n \
+                \         \"data_vencimento\": \"2026-06-07\",\n          \"valor_unitario\"\
+                : \"190.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Grupo Agrícola São Bento\",\n      \"documento\"\
+                : \"44.321.654/0001-88\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"309\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"88851-416\"\
+                ,\n        \"cidade\": \"Curitiba\",\n        \"uf\": \"PR\",\n  \
+                \      \"pais\": \"BRASIL\",\n        \"latitude\": \"-26.046243\"\
+                ,\n        \"longitude\": \"-48.729629\"\n      },\n      \"email\"\
+                : \"sac@saobentoagro.com.br\"\n    },\n    \"embarque\": {\n     \
+                \ \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"719490\",\n      \"data_emissao\": \"2025-07-05\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"6003008007890\",\n       \
+                \   \"descricao\": \"MILHO HÍBRIDO SEMEADURA 20KG\",\n          \"\
+                unidade\": \"KG\",\n          \"quantidade\": \"999\",\n         \
+                \ \"lote\": \"LT-5519\",\n          \"data_fabricacao\": \"2025-06-05\"\
+                ,\n          \"data_vencimento\": \"2026-06-05\",\n          \"valor_unitario\"\
+                : \"160.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Rede Max Alimentos\",\n      \"documento\"\
+                : \"55.789.123/0001-66\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"141\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"87024-129\"\
+                ,\n        \"cidade\": \"Chapecó\",\n        \"uf\": \"SC\",\n   \
+                \     \"pais\": \"BRASIL\",\n        \"latitude\": \"-25.924812\"\
+                ,\n        \"longitude\": \"-51.513106\"\n      },\n      \"email\"\
+                : \"compras@redemax.com\"\n    },\n    \"embarque\": {\n      \"armazem_documento\"\
+                : \"00163083000130\",\n      \"nf_entrada\": \"468022\",\n      \"\
+                data_emissao\": \"2025-07-07\",\n      \"itens\": [\n        {\n \
+                \         \"codigo\": \"4002006005678\",\n          \"descricao\"\
+                : \"HERBICIDA TOXIN 10L\",\n          \"unidade\": \"L\",\n      \
+                \    \"quantidade\": \"2267\",\n          \"lote\": \"LT-3728\",\n\
+                \          \"data_fabricacao\": \"2025-06-07\",\n          \"data_vencimento\"\
+                : \"2026-06-07\",\n          \"valor_unitario\": \"225.0\"\n     \
+                \   }\n      ]\n    }\n  },\n  {\n    \"destinatario\": {\n      \"\
+                nome\": \"Distribuidora Campo Forte\",\n      \"documento\": \"66.321.987/0001-22\"\
+                ,\n      \"tipo_parceiro\": \"CLIENTE\",\n      \"endereco\": {\n\
+                \        \"logradouro\": \"Rua Central\",\n        \"numero\": \"\
+                990\",\n        \"complemento\": \"\",\n        \"bairro\": \"Industrial\"\
+                ,\n        \"cep\": \"89191-941\",\n        \"cidade\": \"Blumenau\"\
+                ,\n        \"uf\": \"SC\",\n        \"pais\": \"BRASIL\",\n      \
+                \  \"latitude\": \"-27.277634\",\n        \"longitude\": \"-50.318217\"\
+                \n      },\n      \"email\": \"pedido@campoforte.com.br\"\n    },\n\
+                \    \"embarque\": {\n      \"armazem_documento\": \"00163083000130\"\
+                ,\n      \"nf_entrada\": \"736956\",\n      \"data_emissao\": \"2025-07-21\"\
+                ,\n      \"itens\": [\n        {\n          \"codigo\": \"6003008007890\"\
+                ,\n          \"descricao\": \"MILHO HÍBRIDO SEMEADURA 20KG\",\n  \
+                \        \"unidade\": \"KG\",\n          \"quantidade\": \"845\",\n\
+                \          \"lote\": \"LT-3432\",\n          \"data_fabricacao\":\
+                \ \"2025-06-21\",\n          \"data_vencimento\": \"2026-06-21\",\n\
+                \          \"valor_unitario\": \"160.0\"\n        }\n      ]\n   \
+                \ }\n  },\n  {\n    \"destinatario\": {\n      \"nome\": \"Fazenda\
+                \ Rio Branco\",\n      \"documento\": \"77.000.555/0001-33\",\n  \
+                \    \"tipo_parceiro\": \"CLIENTE\",\n      \"endereco\": {\n    \
+                \    \"logradouro\": \"Rua Central\",\n        \"numero\": \"42\"\
+                ,\n        \"complemento\": \"\",\n        \"bairro\": \"Industrial\"\
+                ,\n        \"cep\": \"84296-270\",\n        \"cidade\": \"Maringá\"\
+                ,\n        \"uf\": \"PR\",\n        \"pais\": \"BRASIL\",\n      \
+                \  \"latitude\": \"-26.900329\",\n        \"longitude\": \"-51.034236\"\
+                \n      },\n      \"email\": \"rio.branco@fazendas.com\"\n    },\n\
+                \    \"embarque\": {\n      \"armazem_documento\": \"00163083000130\"\
+                ,\n      \"nf_entrada\": \"726367\",\n      \"data_emissao\": \"2025-07-22\"\
+                ,\n      \"itens\": [\n        {\n          \"codigo\": \"4001005001234\"\
+                ,\n          \"descricao\": \"FUNGICIDA AGRIMAX 5L\",\n          \"\
+                unidade\": \"L\",\n          \"quantidade\": \"1712\",\n         \
+                \ \"lote\": \"LT-5208\",\n          \"data_fabricacao\": \"2025-06-22\"\
+                ,\n          \"data_vencimento\": \"2026-06-22\",\n          \"valor_unitario\"\
+                : \"190.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Atacado Boi Gordo\",\n      \"documento\":\
+                \ \"88.888.111/0001-44\",\n      \"tipo_parceiro\": \"CLIENTE\",\n\
+                \      \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n\
+                \        \"numero\": \"858\",\n        \"complemento\": \"\",\n  \
+                \      \"bairro\": \"Industrial\",\n        \"cep\": \"86220-942\"\
+                ,\n        \"cidade\": \"Cascavel\",\n        \"uf\": \"PR\",\n  \
+                \      \"pais\": \"BRASIL\",\n        \"latitude\": \"-25.44968\"\
+                ,\n        \"longitude\": \"-49.80048\"\n      },\n      \"email\"\
+                : \"boigordo@atacado.com\"\n    },\n    \"embarque\": {\n      \"\
+                armazem_documento\": \"00163083000130\",\n      \"nf_entrada\": \"\
+                773060\",\n      \"data_emissao\": \"2025-07-06\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"4002006005678\",\n       \
+                \   \"descricao\": \"HERBICIDA TOXIN 10L\",\n          \"unidade\"\
+                : \"L\",\n          \"quantidade\": \"2976\",\n          \"lote\"\
+                : \"LT-9074\",\n          \"data_fabricacao\": \"2025-06-06\",\n \
+                \         \"data_vencimento\": \"2025-06-06\",\n          \"valor_unitario\"\
+                : \"225.0\"\n        }\n      ]\n    }\n  },\n  {\n    \"destinatario\"\
+                : {\n      \"nome\": \"Coop Agro Brasil\",\n      \"documento\": \"\
+                99.999.222/0001-55\",\n      \"tipo_parceiro\": \"CLIENTE\",\n   \
+                \   \"endereco\": {\n        \"logradouro\": \"Rua Central\",\n  \
+                \      \"numero\": \"374\",\n        \"complemento\": \"\",\n    \
+                \    \"bairro\": \"Industrial\",\n        \"cep\": \"81701-675\",\n\
+                \        \"cidade\": \"Maringá\",\n        \"uf\": \"PR\",\n     \
+                \   \"pais\": \"BRASIL\",\n        \"latitude\": \"-26.373981\",\n\
+                \        \"longitude\": \"-50.421884\"\n      },\n      \"email\"\
+                : \"cooperativa@agrobrasil.com.br\"\n    },\n    \"embarque\": {\n\
+                \      \"armazem_documento\": \"00163083000130\",\n      \"nf_entrada\"\
+                : \"459667\",\n      \"data_emissao\": \"2025-07-04\",\n      \"itens\"\
+                : [\n        {\n          \"codigo\": \"5001007003456\",\n       \
+                \   \"descricao\": \"ADUBO NPK 20-20-20 50KG\",\n          \"unidade\"\
+                : \"KG\",\n          \"quantidade\": \"1091\",\n          \"lote\"\
+                : \"LT-3044\",\n          \"data_fabricacao\": \"2025-06-04\",\n \
+                \         \"data_vencimento\": \"2026-06-04\",\n          \"valor_unitario\"\
+                : \"110.0\"\n        }\n      ]\n    }\n  }\n]"
+        required: true
+      responses:
+        '200':
+          description: Sucesso
+        '400':
+          description: Erro de validação
+        '401':
+          description: Não autorizado
+      summary: POST /ag-control/v1/entrada
+  /ag-control/v1/login:
+    post:
+      requestBody:
+        content:
+          application/json:
+            example:
+              email: arth.dks@gmail.com
+              senha: Sou100%GREGRE!
+        required: true
+      responses:
+        '200':
+          description: Sucesso
+        '400':
+          description: Erro de validação
+        '401':
+          description: Não autorizado
+      summary: POST /ag-control/v1/login
+  /ag-control/v1/saida:
+    post:
+      requestBody:
+        content:
+          application/json:
+            example:
+              raw: "[\n    {\n      \"codigo\": \"4001005001234\",\n      \"lote\"\
+                : \"LT-1719\",\n      \"nf_ag\": \"8997\",\n      \"quantidade\":\
+                \ 1000,\n      \"nf_saida\": \"5566380\",\n      \"data_saida\": \"\
+                2025-07-25\",\n      \"armazem_documento\": \"00163083000130\",\n\
+                \      \"obs\": \"Saída parcial para devoluçsão\"\n    }\n  ]\n\n"
+        required: true
+      responses:
+        '200':
+          description: Sucesso
+        '400':
+          description: Erro de validação
+        '401':
+          description: Não autorizado
+      summary: POST /ag-control/v1/saida
+servers:
+- description: Servidor de produção
+  url: https://api.mgnsystem.com.br
