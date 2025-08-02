@@ -14,11 +14,17 @@
         "tab": "Guides",
         "groups": [
           {
+            "group": "Come por aqui",
+            "pages": [
+              "index"
+              
+            ]
+          },
+          {
             "group": "WMS",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "essentials/settings",
+              "essentials/navigation"
             ]
           },
           {
