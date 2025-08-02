@@ -1,0 +1,69 @@
+---
+title: "Cancelar Entrada"
+description: "https://utilities.mgnsystem.cloud/ag-control/v1/cancelamento"
+---
+
+## **Visão Geral**
+
+Cancela uma movimentação de entrada previamente registrada, utilizando a nota fiscal e o destinatário como identificadores da operação original.
+
+Essa API é utilizada em casos de divergência no recebimento informada pelo armazém geral (AG), permitindo que a empresa cancele oficialmente os lançamentos de estoque feitos anteriormente.
+
+A operação de cancelamento não apaga os dados originais, mas insere uma nova movimentação do tipo CANCELADO, com as mesmas quantidades e lotes da nota original, zerando o saldo disponível nos relatórios.
+
+Método HTTP: POST `/v1/cancelamento`
+
+## Headers
+
+| **Nome**      | **Valor**          |
+| :------------ | :----------------- |
+| Content-Type  | `application/json` |
+| Authorization | `Bearer <token>`   |
+
+## Campos
+
+| **Nome**               | **Tipo** | **Descrição**                                                            |
+| :--------------------- | :------- | :----------------------------------------------------------------------- |
+| nf_entrada             | string   | Número da nota fiscal de entrada a ser cancelada                         |
+| documento_destinatario | string   | CNPJ do destinatário informado na entrada original                       |
+| observacao             | string   | Motivo ou observação sobre o cancelamento (opcional, porém recomendável) |
+
+## Exemplo
+
+<RequestExample>
+
+```json body
+{
+  "nf_entrada": "409824",
+  "documento_destinatario": "00005076000100",
+  "observacao": "Cancelamento solicitado por divergência"
+}
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+	"mensagem": "Entradas canceladas com sucesso"
+}
+```
+
+</ResponseExample>
+
+## Erros comuns
+
+| **Código** | **Mensagem**                                | **Causa Provável**                            |
+| :--------- | :------------------------------------------ | :-------------------------------------------- |
+| 400        | Campos obrigatórios ausentes                | `nf_entrada` ou `documento_destinatario` nulo |
+| 403        | Usuário sem acesso ao armazém               | Sem vínculo com empresa ou armazém            |
+| 404        | Nenhuma movimentação de entrada encontrada  | NF inexistente ou destinatário incorreto      |
+| 409        | Movimentação já foi cancelada anteriormente | Tentativa de cancelamento duplicado           |
+| 500        | Erro interno                                | Violação de política RLS, chave duplicada etc |
+
+<Note>
+  - O cancelamento só será efetuado se a nota já tiver sido registrada como ENTRADA anteriormente.
+  - O sistema verifica se há movimentações com tipo_movimentacao = 'ENTRADA' e gera automaticamente os registros de CANCELADO.
+  - Caso não haja correspondência para a nf_entrada e o documento_destinatario, a requisição será rejeitada com status 404.
+</Note>

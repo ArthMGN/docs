@@ -1,0 +1,136 @@
+---
+title: "Entrada de Estoque"
+description: "https://utilities.mgnsystem.cloud/ag-control/v1/entrada"
+---
+
+## **Visão Geral**
+
+Registra movimentações de **entrada de estoque**, integrando dados de NF-e e armazenagem no sistema **MGN SYSTEM - AG CONTROL**.
+
+Essa API é normalmente utilizada por sistemas externos como o **ERP**, que envia os dados da nota fiscal eletrônica e dos itens armazenados para controle logístico.
+
+Método HTTP: POST `/v1/entrada`
+
+## Headers
+
+| Nome          | Valor              |
+| :------------ | :----------------- |
+| Content-Type  | `application/json` |
+| Authorization | `Bearer <token>`   |
+
+## Campos
+
+### Destinatário
+
+| **Nome**               | **Tipo** | **Descrição**                          |
+| :--------------------- | :------- | :------------------------------------- |
+| `nome`                 | string   | Nome ou razão social do destinatário   |
+| `documento`            | string   | CNPJ ou CPF do destinatário            |
+| `tipo_parceiro`        | string   | `CLIENTE` ou `EMPRESA`                 |
+| `email`                | string   | E-mail da unidade ou contato logístico |
+| `endereco.logradouro`  | string   | Nome da rua / avenida                  |
+| `endereco.numero`      | string   | Número do endereço                     |
+| `endereco.complemento` | string   | Complemento (opcional)                 |
+| `endereco.bairro`      | string   | Bairro                                 |
+| `endereco.cep`         | string   | CEP no formato 00000-000               |
+| `endereco.cidade`      | string   | Cidade                                 |
+| `endereco.uf`          | string   | UF (sigla do estado)                   |
+| `endereco.pais`        | string   | País                                   |
+| `endereco.latitude`    | string   | Latitude geográfica                    |
+| `endereco.longitude`   | string   | Longitude geográfica                   |
+
+### Embarque
+
+| **Nome**            | **Tipo**            | **Descrição**                                |
+| :------------------ | :------------------ | :------------------------------------------- |
+| `armazem_documento` | string              | CNPJ do armazém responsável pelo recebimento |
+| `nf_entrada`        | string              | Número da Nota Fiscal de Entrada             |
+| `data_emissao`      | string (YYYY-MM-DD) | Data de emissão da nota fiscal               |
+| `itens`             | array de objetos    | Lista de itens recebidos                     |
+
+###  Embarque (array dentro de \*\*`embarque.itens`)
+
+| Nome              | Tipo                | Descrição                         |
+| :---------------- | :------------------ | :-------------------------------- |
+| `codigo`          | string              | Código do produto                 |
+| `descricao`       | string              | Descrição do produto              |
+| `unidade`         | string              | Unidade de medida (ex: KG, L, CX) |
+| `quantidade`      | number              | Quantidade recebida               |
+| `lote`            | string              | Código do lote                    |
+| `data_fabricacao` | string (YYYY-MM-DD) | Data de fabricação                |
+| `data_vencimento` | string (YYYY-MM-DD) | Data de vencimento                |
+| `valor_unitario`  | number              | Valor unitário do produto         |
+
+## **Exemplo**
+
+<RequestExample>
+
+```json body
+[
+  {
+    "destinatario": {
+      "nome": "Supermercado Terra Nova",
+      "documento": "00.005.076/0001-00",
+      "tipo_parceiro": "CLIENTE",
+      "endereco": {
+        "logradouro": "Rua Central",
+        "numero": "643",
+        "complemento": "",
+        "bairro": "Industrial",
+        "cep": "81369-822",
+        "cidade": "Maringá",
+        "uf": "PR",
+        "pais": "BRASIL",
+        "latitude": "-26.863327",
+        "longitude": "-51.084092"
+      },
+      "email": "unidade2@mercadoterranova.com.br"
+    },
+    "embarque": {
+      "armazem_documento": "00163083000130",
+      "nf_entrada": "409824",
+      "data_emissao": "2025-07-07",
+      "itens": [
+        {
+          "codigo": "6003008007890",
+          "descricao": "MILHO HÍBRIDO SEMEADURA 20KG",
+          "unidade": "KG",
+          "quantidade": "1393",
+          "lote": "LT-8747",
+          "data_fabricacao": "2025-06-07",
+          "data_vencimento": "2025-06-07",
+          "valor_unitario": "160.0"
+        }
+      ]
+    }
+  }
+]
+```
+
+</RequestExample>
+
+<RequestExample>
+
+```json 200
+{
+	"status": "ok",
+	"mensagem": "Entradas processadas com sucesso"
+}
+```
+
+</RequestExample>
+
+## Erros comuns
+
+| **Código** | **Mensagem**                                        | **Causa Provável**                      |
+| :--------- | :-------------------------------------------------- | :-------------------------------------- |
+| 400        | Campos obrigatórios ausentes                        | Campo como `nf_entrada` ou `itens` nulo |
+| 403        | Usuário sem vínculo com a empresa                   | Token não corresponde à empresa enviada |
+| 422        | Documento do destinatário inválido ou mal formatado | CPF/CNPJ incorreto                      |
+| 500        | Erro interno ao processar entrada                   | Dados inconsistentes ou duplicados      |
+
+<Note>
+  - A movimentação registrada tem tipo_movimentacao = 'ENTRADA'.
+  - Se o produto, armazém ou parceiro ainda não existir, será criado automaticamente vinculado à empresa.
+  - A função respeita as **RLS policies** para garantir que o usuário só altere dados da empresa à qual está vinculado.
+</Note>

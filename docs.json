@@ -14,7 +14,7 @@
         "tab": "Guides",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "WMS",
             "pages": [
               "index",
               "quickstart",
@@ -22,19 +22,20 @@
             ]
           },
           {
-            "group": "Customization",
+            "group": "TMS",
             "pages": [
               "essentials/settings",
               "essentials/navigation"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "AG CONTROL",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "ag-control/login",
+              "ag-control/entrada",
+              "ag-control/confirmar_recebimento",
+              "ag-control/saida",
+              "ag-control/cancelamento"
             ]
           },
           {

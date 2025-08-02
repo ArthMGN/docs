@@ -1,0 +1,90 @@
+---
+title: "Autenticação"
+description: "https://utilities.mgnsystem.cloud/ag-control/v1/login"
+---
+
+## **Visão Geral**
+
+A autenticação nas APIs da **MGN SYSTEM** é realizada via **JWT (JSON Web Token)**, necessário para todas as requisições autenticadas.
+
+Para obter o token, utilize o endpoint:
+
+Método HTTP: POST `/v1/login`
+
+## Campos
+
+| **Nome**  | **Tipo** | **Descrição**                          |
+| :-------- | :------- | :------------------------------------- |
+| `email`\* | string   | email do usuário cadastrado no sistema |
+| `senha`\* | string   | senha                                  |
+
+## Exemplo
+
+<RequestExample>
+
+```json Body
+{
+  "email": "usuario@empresa.com.br",
+  "senha": "sua_senha"
+}
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+	"user": {
+		"id": "43144d52-2393-477c-a28b-503504f8c64f",
+		"aud": "authenticated",
+		"role": "authenticated",
+		"email": "usuario@empresa.com.br",
+		"phone": "",
+		"created_at": "2025-07-05T01:48:19.492219Z",
+		"identities": [
+			{
+				"id": "43144d52-2393-477c-a28b-503504f8c64f",
+				"email": "usuario@empresa.com.br",
+				"user_id": "43144d52-2393-477c-a28b-503504f8c64f",
+				"provider": "email",
+				"created_at": "2025-07-05T01:48:19.494332Z",
+				"updated_at": "2025-07-05T01:48:19.494332Z",
+				"identity_id": "ae58e61f-e602-4f7b-a6a9-f3de0037d361",
+				"identity_data": {
+					"sub": "43144d52-2393-477c-a28b-503504f8c64f",
+					"email": "usuario@empresa.com.br",
+					"email_verified": false,
+					"phone_verified": false
+				},
+				"last_sign_in_at": "2025-07-05T01:48:19.49427Z"
+			}
+		],
+		"updated_at": "2025-07-25T18:43:26.234582Z",
+		"app_metadata": {
+			"provider": "email",
+			"providers": [
+				"email"
+			]
+		},
+		"confirmed_at": "2025-07-05T01:48:19.500015Z",
+		"is_anonymous": false,
+		"user_metadata": {
+			"email_verified": true
+		},
+		"last_sign_in_at": "2025-07-25T18:43:26.225787256Z",
+		"email_confirmed_at": "2025-07-05T01:48:19.500015Z"
+	},
+	"expires_at": 1753472606,
+	"expires_in": 3600,
+	"token_type": "bearer",
+	"access_token": "eyJhbGciOiJIUzr1NiIsImtpZCI6IjdWZk5hakV4UXBUUE5SeVYiLCJ0eXAiAiJKV1QifQ.eyJpc3MiOiJodHRwczovL3pidHF6bGJ0Z2x4dHlncWNxaXd3LnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI0NTI0ZGQ1Mi0yZjkzLTQ3N2MtYTI4Yi01MDM1MDlmOGM2NGYiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzUzNDcyNjA2LCJpYXQiOjE3NTM0NjkwMDYsImVtYWlsIjoiYXJ0aC5ka3NAZ21haWwuY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6eyJlbWFpbF92ZXJpZmllZCI6dHJ1ZX0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTM0NjkwMDZ9XSwic2Vzc2lvbl9pZCI6ImYwNTBiYmJiLTEyYTQtNDc5Ni04MjIyLWI4MDdjY2Y0NzM1YyIsImlzX2Fub255bW91cyI6ZmFsc2V9.txyuSbB5Ld_x9kjvSHASduiCpmacLUbZCUeXklv98xs",
+	"refresh_token": "dv7t2d73b3vl"
+}
+```
+
+</ResponseExample>
+
+<Note>
+  Certifique-se de que o e-mail esteja cadastrado corretamente no sistema
+</Note>
