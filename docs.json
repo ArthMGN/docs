@@ -3,9 +3,9 @@
   "theme": "mint",
   "name": "Painel de Documentação",
   "colors": {
-    "primary": "#AFD9EF",
+    "primary": "#2A3A4A",
     "light": "#2A3A4A",
-    "dark": "#AFD9EF"
+    "dark": "#2A3A4A"
   },
   "favicon": "/favicon.png",
   "navigation": {
