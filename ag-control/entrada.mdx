@@ -20,6 +20,25 @@ Método HTTP: POST `/v1/entrada`
 
 ## Campos
 
+### Emitente
+
+| **Nome**               | **Tipo** | **Descrição**                          |
+| :--------------------- | :------- | :------------------------------------- |
+| `nome`                 | string   | Nome ou razão social do destinatário   |
+| `documento`            | string   | CNPJ ou CPF do destinatário            |
+| `tipo_parceiro`        | string   | `CLIENTE` ou `EMPRESA`                 |
+| `email`                | string   | E-mail da unidade ou contato logístico |
+| `endereco.logradouro`  | string   | Nome da rua / avenida                  |
+| `endereco.numero`      | string   | Número do endereço                     |
+| `endereco.complemento` | string   | Complemento (opcional)                 |
+| `endereco.bairro`      | string   | Bairro                                 |
+| `endereco.cep`         | string   | CEP no formato 00000-000               |
+| `endereco.cidade`      | string   | Cidade                                 |
+| `endereco.uf`          | string   | UF (sigla do estado)                   |
+| `endereco.pais`        | string   | País                                   |
+| `endereco.latitude`    | string   | Latitude geográfica                    |
+| `endereco.longitude`   | string   | Longitude geográfica                   |
+
 ### Destinatário
 
 | **Nome**               | **Tipo** | **Descrição**                          |
@@ -67,43 +86,63 @@ Método HTTP: POST `/v1/entrada`
 
 ```json body
 [
-  {
-    "destinatario": {
-      "nome": "Supermercado Terra Nova",
-      "documento": "00.005.076/0001-00",
-      "tipo_parceiro": "CLIENTE",
-      "endereco": {
-        "logradouro": "Rua Central",
-        "numero": "643",
-        "complemento": "",
-        "bairro": "Industrial",
-        "cep": "81369-822",
-        "cidade": "Maringá",
-        "uf": "PR",
-        "pais": "BRASIL",
-        "latitude": "-26.863327",
-        "longitude": "-51.084092"
-      },
-      "email": "unidade2@mercadoterranova.com.br"
-    },
-    "embarque": {
-      "armazem_documento": "00163083000130",
-      "nf_entrada": "409824",
-      "data_emissao": "2025-07-07",
-      "itens": [
-        {
-          "codigo": "6003008007890",
-          "descricao": "MILHO HÍBRIDO SEMEADURA 20KG",
-          "unidade": "KG",
-          "quantidade": "1393",
-          "lote": "LT-8747",
-          "data_fabricacao": "2025-06-07",
-          "data_vencimento": "2025-06-07",
-          "valor_unitario": "160.0"
-        }
-      ]
-    }
-  }
+	{
+		"emitente": {
+			"nome": "EMPRESA EMITENTE LTDA",
+			"documento": "02.123.456/0001-01",
+			"tipo_parceiro": "EMPRESA",
+			"endereco": {
+				"logradouro": "Avenida 31 de Março",
+				"numero": "2500",
+				"complemento": "",
+				"bairro": "Centro",
+				"cep": "14870-000",
+				"cidade": "Jaboticabal",
+				"uf": "SP",
+				"pais": "BRASIL",
+				"latitude": "-21.2587",
+				"longitude": "-48.3245"
+			},
+			"email": "contato.jb@empresaemitente.com.br"
+		},
+		"destinatario": {
+			"nome": "SUPERMERCADO CIDADE NOVA",
+			"documento": "03.001.234/0001-00",
+			"tipo_parceiro": "CLIENTE",
+			"endereco": {
+				"logradouro": "Rua do Comércio",
+				"numero": "500",
+				"complemento": "Loja 01",
+				"bairro": "Vila Nova",
+				"cep": "13000-000",
+				"cidade": "Campinas",
+				"uf": "SP",
+				"pais": "BRASIL",
+				"latitude": "-22.9056",
+				"longitude": "-47.0608"
+			},
+			"email": "cidadenova@supermercado.com.br",
+			"prazo_armazenagem": 30,
+			"contrato": "C-2025-001"
+		},
+		"embarque": {
+			"armazem_documento": "10.000.000/0001-10",
+			"nf_entrada": "500123",
+			"data_emissao": "2025-07-20",
+			"itens": [
+				{
+					"codigo": "1234567890123",
+					"descricao": "FERTILIZANTE NPK 20-20-20 50KG",
+					"unidade": "KG",
+					"quantidade": 1500,
+					"lote": "LOTE-A-100",
+					"data_fabricacao": "2025-06-01",
+					"data_vencimento": "2026-06-01",
+					"valor_unitario": 2.50
+				}
+			]
+		}
+	}
 ]
 ```
 
