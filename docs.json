@@ -4,8 +4,8 @@
   "name": "Painel de Documentação",
   "colors": {
     "primary": "#2A3A4A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "light": "#2A3A4A",
+    "dark": "#2A3A4A"
   },
   "favicon": "/favicon.png",
   "navigation": {
