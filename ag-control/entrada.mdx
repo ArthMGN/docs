@@ -26,7 +26,7 @@ Método HTTP: POST `/v1/entrada`
 | :--------------------- | :------- | :------------------------------------- |
 | `nome`                 | string   | Nome ou razão social do destinatário   |
 | `documento`            | string   | CNPJ ou CPF do destinatário            |
-| `tipo_parceiro`        | string   | `CLIENTE` ou `EMPRESA`                 |
+| `tipo_parceiro`        | string   | `CLIENTE` ou `COMPANHIA`               |
 | `email`                | string   | E-mail da unidade ou contato logístico |
 | `endereco.logradouro`  | string   | Nome da rua / avenida                  |
 | `endereco.numero`      | string   | Número do endereço                     |
@@ -41,22 +41,25 @@ Método HTTP: POST `/v1/entrada`
 
 ### Destinatário
 
-| **Nome**               | **Tipo** | **Descrição**                          |
-| :--------------------- | :------- | :------------------------------------- |
-| `nome`                 | string   | Nome ou razão social do destinatário   |
-| `documento`            | string   | CNPJ ou CPF do destinatário            |
-| `tipo_parceiro`        | string   | `CLIENTE` ou `EMPRESA`                 |
-| `email`                | string   | E-mail da unidade ou contato logístico |
-| `endereco.logradouro`  | string   | Nome da rua / avenida                  |
-| `endereco.numero`      | string   | Número do endereço                     |
-| `endereco.complemento` | string   | Complemento (opcional)                 |
-| `endereco.bairro`      | string   | Bairro                                 |
-| `endereco.cep`         | string   | CEP no formato 00000-000               |
-| `endereco.cidade`      | string   | Cidade                                 |
-| `endereco.uf`          | string   | UF (sigla do estado)                   |
-| `endereco.pais`        | string   | País                                   |
-| `endereco.latitude`    | string   | Latitude geográfica                    |
-| `endereco.longitude`   | string   | Longitude geográfica                   |
+| **Nome**               | **Tipo**            | **Descrição**                             |
+| :--------------------- | :------------------ | :---------------------------------------- |
+| `nome`                 | string              | Nome ou razão social do destinatário      |
+| `documento`            | string              | CNPJ ou CPF do destinatário               |
+| `tipo_parceiro`        | string              | `CLIENTE` ou `COMPANHIA`                  |
+| `email`                | string              | E-mail da unidade ou contato logístico    |
+| `prazo_armazenagem`    | int                 | Prazo que o produto pode ficar armazenado |
+| `contrato`             | string              | Numero do contrato                        |
+| `validade_contrato`    | string (YYYY-MM-DD) | Data de validade do contrato              |
+| `endereco.logradouro`  | string              | Nome da rua / avenida                     |
+| `endereco.numero`      | string              | Número do endereço                        |
+| `endereco.complemento` | string              | Complemento (opcional)                    |
+| `endereco.bairro`      | string              | Bairro                                    |
+| `endereco.cep`         | string              | CEP no formato 00000-000                  |
+| `endereco.cidade`      | string              | Cidade                                    |
+| `endereco.uf`          | string              | UF (sigla do estado)                      |
+| `endereco.pais`        | string              | País                                      |
+| `endereco.latitude`    | string              | Latitude geográfica                       |
+| `endereco.longitude`   | string              | Longitude geográfica                      |
 
 ### Embarque
 
