@@ -24,7 +24,7 @@ Método HTTP: POST `/v1/entrada`
 
 | **Nome**               | **Tipo** | **Descrição**                        |
 | :--------------------- | :------- | :----------------------------------- |
-| `tipo_parceiro`        | string   | `CLIENTE` / `CLIENTE` /  `ARMAZEM`   |
+| `tipo_parceiro`        | string   | `COMPANHIA` / `CLIENTE`              |
 | `nome`                 | string   | Nome ou razão social do destinatário |
 | `documento`            | string   | CNPJ ou CPF do destinatário          |
 | `endereco.logradouro`  | string   | Nome da rua / avenida                |
@@ -44,7 +44,7 @@ Método HTTP: POST `/v1/entrada`
 | :--------------------- | :------- | :---------------------------------------- |
 | `nome`                 | string   | Nome ou razão social do destinatário      |
 | `documento`            | string   | CNPJ ou CPF do destinatário               |
-| `tipo_parceiro`        | string   | `CLIENTE` / `CLIENTE` /  `ARMAZEM`        |
+| `tipo_parceiro`        | string   | `CLIENTE` /  `ARMAZEM`                    |
 | `prazo_armazenagem`    | int      | Prazo que o produto pode ficar armazenado |
 | `endereco.logradouro`  | string   | Nome da rua / avenida                     |
 | `endereco.numero`      | string   | Número do endereço                        |
@@ -86,7 +86,7 @@ Método HTTP: POST `/v1/entrada`
 [
     {
       "emitente": {
-        "tipo_parceiro": "CLIENTE",
+        "tipo_parceiro": "COMPANHIA",
         "nome": "CLIENTE XPTO LTDA",
         "documento": "55.444.333/0001-22",
         "endereco": {
