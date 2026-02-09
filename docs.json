@@ -45,8 +45,8 @@
               "ag-control/confirmar_recebimento",
               "ag-control/saida",
               "ag-control/cancelamento",
-              "ag-control/cancelamento-copied-1",
-              "ag-control/cancelamento-copied-2"
+              "ag-control/consultar_recebimento",
+              "ag-control/confirmar_consulta_recebimento"
             ]
           }
         ]
