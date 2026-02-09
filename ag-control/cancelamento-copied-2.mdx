@@ -5,7 +5,7 @@ description: "https://utilities.mgnsystem.cloud/ag-control/v1/confirmar_consulta
 
 ## **Visão Geral**
 
-Registra a confirmação de consumo de notas fiscais de entrada por um sistema externo, garantindo que uma NF já consultada não seja retornada novamente em futuras consultas de recebimento.  
+Registra a confirmação de consumo de notas fiscais de entrada por um sistema externo, garantindo que uma NF já consultada não seja retornada novamente em futuras consultas de recebimento.
 
 Esse endpoint é utilizado após a leitura bem-sucedida das notas fiscais recebidas pelo AG, assegurando idempotência, rastreabilidade por integração e controle de processamento entre sistemas (ERP, TMS, WMS, BI, etc.).
 
@@ -20,13 +20,13 @@ Método HTTP: POST `/v1/confirmar_consulta_recebimento`
 
 ## Campos
 
-| **Nome**     | **Tipo**   | **Descrição**                                               |
-| :----------- | :--------- | :---------------------------------------------------------- |
-| `p_destino`  | string     | Identificador do sistema consumidor (ex: SAP, TOTVS, ETC..) |
-| payload      | array      | Lista de confirmações                                       |
-| ag_documento | string     | Documento (CNPJ) do AG                                      |
-| nf_entrada   | string     | Número da NF recebida                                       |
-| nf_entrada   | observacao | Observação livre de auditoria                               |
+| **Nome**       | **Tipo**   | **Descrição**                                               |
+| :------------- | :--------- | :---------------------------------------------------------- |
+| `destino`      | string     | Identificador do sistema consumidor (ex: SAP, TOTVS, ETC..) |
+| `payload`      | array      | Lista de confirmações                                       |
+| `ag_documento` | string     | Documento (CNPJ) do AG                                      |
+| `nf_entrada`   | string     | Número da NF recebida                                       |
+| `nf_entrada`   | observacao | Observação livre de auditoria                               |
 
 ## Exemplo
 
