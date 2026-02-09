@@ -20,14 +20,13 @@ Método HTTP:  POST `/v1/confirmar_recebimento`
 
 ## Campos
 
-| **Nome**            | **Tipo** | **Descrição**                                                           |
-| :------------------ | :------- | :---------------------------------------------------------------------- |
-| `armazem_documento` | string   | CNPJ do armazém geral responsável pelo recebimento                      |
-| `codigo`            | string   | Código do produto conforme cadastro na base da empresa                  |
-| `lote`              | string   | Lote do produto a ser confirmado                                        |
-| `nf_entrada`        | string   | Número da nota fiscal de entrada do cliente (empresa contratante do AG) |
-| `nf_ag`             | string   | Número da nota fiscal emitida pelo armazém geral (prestação de serviço) |
-| `data_entrada`      | string   | Data efetiva do recebimento físico no armazém (formato: YYYY-MM-DD)     |
+| **Nome**       | **Tipo** | **Descrição**                                                           |
+| :------------- | :------- | :---------------------------------------------------------------------- |
+| `ag_documento` | string   | CNPJ do armazém geral responsável pelo recebimento                      |
+| `codigo`       | string   | Código do produto conforme cadastro na base da empresa                  |
+| `lote`         | string   | Lote do produto a ser confirmado                                        |
+| `nf_entrada`   | string   | Número da nota fiscal de entrada do cliente (empresa contratante do AG) |
+| `data_entrada` | string   | Data efetiva do recebimento físico no armazém (formato: YYYY-MM-DD)     |
 
 ## **Exemplo**
 
@@ -35,15 +34,21 @@ Método HTTP:  POST `/v1/confirmar_recebimento`
 
 ```json body
 [
-  {
-    "armazem_documento": "00163083000130",
-    "codigo": "5001007003456",
-    "lote": "LT-6286",
-    "nf_entrada": "266549",
-    "nf_ag": "8335",
-    "data_entrada": "2025-07-24"
-  }
-]
+    {
+      "ag_documento": "98.765.432/0001-11",
+      "codigo": "PROD-001",
+      "lote": "L20260201A",
+      "nf_entrada": "NF123456",
+      "data_entrada": "2026-02-06"
+    },
+    {
+      "ag_documento": "98.765.432/0001-11",
+      "codigo": "PROD-002",
+      "lote": "CL20260202",
+      "nf_entrada": "NF789012",
+      "data_entrada": "2026-02-06"
+    }
+  ]
 ```
 
 </RequestExample>

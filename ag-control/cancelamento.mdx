@@ -22,11 +22,11 @@ Método HTTP: POST `/v1/cancelamento`
 
 ## Campos
 
-| **Nome**               | **Tipo** | **Descrição**                                                            |
-| :--------------------- | :------- | :----------------------------------------------------------------------- |
-| nf_entrada             | string   | Número da nota fiscal de entrada a ser cancelada                         |
-| documento_destinatario | string   | CNPJ do destinatário informado na entrada original                       |
-| observacao             | string   | Motivo ou observação sobre o cancelamento (opcional, porém recomendável) |
+| **Nome**       | **Tipo** | **Descrição**                                                            |
+| :------------- | :------- | :----------------------------------------------------------------------- |
+| `nf_entrada`   | string   | Número da nota fiscal de entrada a ser cancelada                         |
+| `ag_documento` | string   | CNPJ do destinatario informado na entrada original                       |
+| `observacao`   | string   | Motivo ou observação sobre o cancelamento (opcional, porém recomendável) |
 
 ## Exemplo
 
@@ -34,9 +34,9 @@ Método HTTP: POST `/v1/cancelamento`
 
 ```json body
 {
-  "nf_entrada": "409824",
-  "documento_destinatario": "00005076000100",
-  "observacao": "Cancelamento solicitado por divergência"
+  "nf_entrada": "NF123456",
+  "ag_documento": "98.765.432/0001-11",
+  "observacao": "Cancelamento por divergência na nota"
 }
 ```
 
@@ -56,7 +56,7 @@ Método HTTP: POST `/v1/cancelamento`
 
 | **Código** | **Mensagem**                                | **Causa Provável**                            |
 | :--------- | :------------------------------------------ | :-------------------------------------------- |
-| 400        | Campos obrigatórios ausentes                | `nf_entrada` ou `documento_destinatario` nulo |
+| 400        | Campos obrigatórios ausentes                | `nf_entrada` ou `ag_documento` nulo           |
 | 403        | Usuário sem acesso ao armazém               | Sem vínculo com empresa ou armazém            |
 | 404        | Nenhuma movimentação de entrada encontrada  | NF inexistente ou destinatário incorreto      |
 | 409        | Movimentação já foi cancelada anteriormente | Tentativa de cancelamento duplicado           |

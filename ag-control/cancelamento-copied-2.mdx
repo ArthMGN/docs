@@ -1,0 +1,91 @@
+---
+title: "Confirmar Consulta Recebimento"
+description: "https://utilities.mgnsystem.cloud/ag-control/v1/confirmar_consulta_recebimento"
+---
+
+## **Visão Geral**
+
+Registra a confirmação de consumo de notas fiscais de entrada por um sistema externo, garantindo que uma NF já consultada não seja retornada novamente em futuras consultas de recebimento.  
+
+Esse endpoint é utilizado após a leitura bem-sucedida das notas fiscais recebidas pelo AG, assegurando idempotência, rastreabilidade por integração e controle de processamento entre sistemas (ERP, TMS, WMS, BI, etc.).
+
+Método HTTP: POST `/v1/confirmar_consulta_recebimento`
+
+## Headers
+
+| **Nome**      | **Valor**          |
+| :------------ | :----------------- |
+| Content-Type  | `application/json` |
+| Authorization | `Bearer <token>`   |
+
+## Campos
+
+| **Nome**     | **Tipo**   | **Descrição**                                               |
+| :----------- | :--------- | :---------------------------------------------------------- |
+| `p_destino`  | string     | Identificador do sistema consumidor (ex: SAP, TOTVS, ETC..) |
+| payload      | array      | Lista de confirmações                                       |
+| ag_documento | string     | Documento (CNPJ) do AG                                      |
+| nf_entrada   | string     | Número da NF recebida                                       |
+| nf_entrada   | observacao | Observação livre de auditoria                               |
+
+## Exemplo
+
+<RequestExample>
+
+```json body
+{
+  "destino": "SAP",
+  "payload": [
+    {
+      "ag_documento": "12.345.678/0001-99",
+      "nf_entrada": "NF123456",
+      "observacao": "Processada em lote"
+    },
+    {
+      "ag_documento": "12.345.678/0001-99",
+      "nf_entrada": "NF789012",
+      "observacao": "Processada em lote"
+    }
+  ]
+}
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Processado",
+  "destino": "SAP",
+  "resultado": [
+    {
+      "ok": true,
+      "status": 200,
+      "message": "Consumo confirmado",
+      "data": {
+        "ag_id": "b47043ef-8501-4dfd-b73c-1ab687f8ab6d",
+        "ag_documento": "12.345.678/0001-99",
+        "nf_entrada": "NF123456",
+        "consumido_em": "2026-02-10T14:32:11",
+        "consumido_por": "8d77c5b1-91a2-4c7a-bc77-3cfa92a111aa"
+      }
+    }
+  ]
+}
+```
+
+</ResponseExample>
+
+## Erros comuns
+
+| **Código** | **Mensagem**                               | **Causa Provável**                            |
+| :--------- | :----------------------------------------- | :-------------------------------------------- |
+| 403        | Usuário sem acesso ao armazém              | Sem vínculo com empresa ou armazém            |
+| 404        | Nenhuma movimentação de entrada encontrada | NF já consumida                               |
+| 500        | Erro interno                               | Violação de política RLS, chave duplicada etc |
+
+<Note>
+  - A confirmação de consulta **somente será efetuada** se a nota fiscal já tiver sido **registrada previamente como ENTRADA** no sistema. Caso contrário, a requisição será rejeitada.
+</Note>

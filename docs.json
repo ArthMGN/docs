@@ -9,6 +9,20 @@
   },
   "favicon": "/favicon.png",
   "navigation": {
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Site",
+          "icon": "globe-pointer",
+          "href": "https://mgnsystem.com.br"
+        },
+        {
+          "anchor": "Supote",
+          "icon": "headset",
+          "href": "mailto:suporte@mgnsystem.com.br"
+        }
+      ]
+    },
     "tabs": [
       {
         "tab": "Documentação",
@@ -17,14 +31,11 @@
             "group": "Comece por aqui",
             "pages": [
               "index"
-              
             ]
           },
           {
             "group": "WMS",
-            "pages": [
-              
-            ]
+            "pages": []
           },
           {
             "group": "AG CONTROL",
@@ -33,27 +44,14 @@
               "ag-control/entrada",
               "ag-control/confirmar_recebimento",
               "ag-control/saida",
-              "ag-control/cancelamento"
+              "ag-control/cancelamento",
+              "ag-control/cancelamento-copied-1",
+              "ag-control/cancelamento-copied-2"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Site",
-          "href": "https://mgnsystem.com.br",
-          "icon": "globe-pointer"
-        },
-        {
-          "anchor": "Supote",
-          "href": "mailto:suporte@mgnsystem.com.br",
-          "icon": "headset"
-        }
-        
-      ]
-    }
+    ]
   },
   "logo": {
     "light": "/logo/light.png",

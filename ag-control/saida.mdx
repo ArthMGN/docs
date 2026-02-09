@@ -18,16 +18,16 @@ Método HTTP: POST `/v1/saida`
 
 ## Campos
 
-| **Nome**            | **Tipo** | **Descrição**                                                     |
-| :------------------ | :------- | :---------------------------------------------------------------- |
-| `codigo`            | string   | Código do produto conforme cadastro na empresa                    |
-| `lote`              | string   | Lote do produto a ser baixado                                     |
-| `quantidade`        | string   | Quantidade a ser baixada do estoque (pode ser parcial ou total)   |
-| `nf_saida`          | string   | Número da nota fiscal de saída vinculada à operação logística     |
-| `nf_ag`             | string   | Número da nota fiscal emitida pelo armazém (prestação de serviço) |
-| `data_saida`        | string   | Data da saída física do material do armazém (formato: YYYY-MM-DD) |
-| `armazem_documento` | string   | CNPJ do armazém responsável pela armazenagem e expedição          |
-| `obs`               | string   | Observações adicionais sobre a operação de saída (opcional)       |
+| **Nome**       | **Tipo** | **Descrição**                                                     |
+| :------------- | :------- | :---------------------------------------------------------------- |
+| `ag_documento` | string   | CNPJ do armazém responsável pela armazenagem e expedição          |
+| `codigo`       | string   | Código do produto conforme cadastro na empresa                    |
+| `lote`         | string   | Lote do produto a ser baixado                                     |
+| `quantidade`   | string   | Quantidade a ser baixada do estoque (pode ser parcial ou total)   |
+| `nf_entrada`   | string   | Número da nota fiscal de entrada vinculada à operação logística   |
+| `nf_saida`     | string   | Número da nota fiscal de saída vinculada à operação logística     |
+| `data_saida`   | string   | Data da saída física do material do armazém (formato: YYYY-MM-DD) |
+| `obs`          | string   | Observações adicionais sobre a operação de saída (opcional)       |
 
 ## **Exemplo**
 
@@ -35,17 +35,17 @@ Método HTTP: POST `/v1/saida`
 
 ```json body
 [
-  {
-    "codigo": "4001005001234",
-    "lote": "LT-9421",
-    "nf_ag": "9586",
-    "quantidade": 206,
-    "nf_saida": "556680",
-    "data_saida": "2025-07-25",
-    "armazem_documento": "00163083000130",
-    "obs": "Saída parcial para devolução"
-  }
-]
+    {
+      "ag_documento": "98.765.432/0001-11",
+      "codigo": "PROD-001",
+      "lote": "L20260201A",
+      "quantidade": "10",
+      "nf_entrada": "NF123456",
+      "nf_saida": "RET0001",
+      "data_saida": "2026-02-06",
+      "obs": "Retorno parcial"
+    }
+  ]
 ```
 
 </RequestExample>

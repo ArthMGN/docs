@@ -1,0 +1,93 @@
+---
+title: "Consultar Recebimento"
+description: "https://utilities.mgnsystem.cloud/ag-control/v1/consultar_recebimento"
+---
+
+## **Visão Geral**
+
+Consulta notas fiscais de entrada que já foram recebidas e confirmadas pelo AG, retornando informações de cabeçalho (NF, datas, AG, emitente, destinatário e totais) ainda não consumidas por um sistema de integração específico.
+
+Esse endpoint é normalmente utilizado por sistemas externos (ERP, TMS, WMS, BI, etc.) para identificar quais notas fiscais já deram entrada física no armazém e estão disponíveis para processamento, garantindo controle de consumo, idempotência e rastreabilidade por integração.
+
+Método HTTP: POST `/v1/consultar_recebimento`
+
+## Headers
+
+| **Nome**      | **Valor**          |
+| :------------ | :----------------- |
+| Content-Type  | `application/json` |
+| Authorization | `Bearer <token>`   |
+
+## Campos
+
+| **Nome**         | **Tipo** | **Descrição**                                                                                                                                                                  |
+| :--------------- | :------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `p_destino`      | string   | Identificador lógico do sistema consumidor da integração.<br />Usado para controle de idempotência (garante que a mesma NF não seja processada duas vezes pelo mesmo sistema). |
+| `p_ag_documento` | string   | Documento (CNPJ/CPF) do AG (armazém geral) a ser filtrado                                                                                                                      |
+| `p_limit`        | int      | Quantidade máxima de notas fiscais retornadas na consulta.                                                                                                                     |
+
+## Exemplo
+
+<RequestExample>
+
+```json body
+{
+  "p_destino": "ERP",
+  "p_ag_documento": "12.345.678/0001-99",
+  "p_limit": 50
+}
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "status": 200,
+  "message": "Processado",
+  "destino": "ERP",
+  "resultado": [
+    {
+      "ok": true,
+      "status": 200,
+      "message": "NF recebida",
+      "data": {
+        "empresa_id": "0c3e1d9c-7a2b-4f4b-9b8c-91d7c7d1a111",
+        "ag_id": "b47043ef-8501-4dfd-b73c-1ab687f8ab6d",
+        "ag_nome": "AG LOGISTICA SUL",
+        "ag_documento": "12.345.678/0001-99",
+        "nf_entrada": "NF123456",
+        "data_emissao": "2026-02-01",
+        "data_recebimento_ag": "2026-02-03",
+        "lead_time_dias": 2,
+        "tipo_operacao": "AG-CLIENTE",
+        "emitente_id": "1b2c3d4e-aaaa-bbbb-cccc-123456789000",
+        "emitente_nome": "INDUSTRIA ABC LTDA",
+        "emitente_documento": "11.222.333/0001-44",
+        "destinatario_id": "b47043ef-8501-4dfd-b73c-1ab687f8ab6d",
+        "destinatario_nome": "AG LOGISTICA SUL",
+        "destinatario_documento": "12.345.678/0001-99",
+        "qtd_total": 350,
+        "valor_total": 18500.75
+      }
+    }
+  ]
+}
+```
+
+</ResponseExample>
+
+## Erros comuns
+
+| **Código** | **Mensagem**                               | **Causa Provável**                            |
+| :--------- | :----------------------------------------- | :-------------------------------------------- |
+| 403        | Usuário sem acesso ao armazém              | Sem vínculo com empresa ou armazém            |
+| 404        | Nenhuma movimentação de entrada encontrada | NF já confirmada                              |
+| 500        | Erro interno                               | Violação de política RLS, chave duplicada etc |
+
+<Note>
+  - A consulta retorna apenas NFs que possuem movimentações com `tipo_movimentacao = 'ENTRADA'` e `data_entrada` preenchida (ou seja, recebimento confirmado pelo AG).
+  - O endpoint filtra automaticamente as NFs que já tenham registro de consumo na tabela  para o mesmo `destino`, garantindo que cada integração processe apenas o que ainda está pendente.
+  - Se `ag_documento` não for informado, o sistema retorna notas recebidas de **qualquer AG** (respeitando a empresa do usuário autenticado).
+</Note>

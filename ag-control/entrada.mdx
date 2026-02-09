@@ -22,53 +22,48 @@ Método HTTP: POST `/v1/entrada`
 
 ### Emitente
 
-| **Nome**               | **Tipo** | **Descrição**                          |
-| :--------------------- | :------- | :------------------------------------- |
-| `nome`                 | string   | Nome ou razão social do destinatário   |
-| `documento`            | string   | CNPJ ou CPF do destinatário            |
-| `tipo_parceiro`        | string   | `CLIENTE` ou `COMPANHIA`               |
-| `email`                | string   | E-mail da unidade ou contato logístico |
-| `endereco.logradouro`  | string   | Nome da rua / avenida                  |
-| `endereco.numero`      | string   | Número do endereço                     |
-| `endereco.complemento` | string   | Complemento (opcional)                 |
-| `endereco.bairro`      | string   | Bairro                                 |
-| `endereco.cep`         | string   | CEP no formato 00000-000               |
-| `endereco.cidade`      | string   | Cidade                                 |
-| `endereco.uf`          | string   | UF (sigla do estado)                   |
-| `endereco.pais`        | string   | País                                   |
-| `endereco.latitude`    | string   | Latitude geográfica                    |
-| `endereco.longitude`   | string   | Longitude geográfica                   |
+| **Nome**               | **Tipo** | **Descrição**                        |
+| :--------------------- | :------- | :----------------------------------- |
+| `tipo_parceiro`        | string   | `CLIENTE` / `CLIENTE` /  `ARMAZEM`   |
+| `nome`                 | string   | Nome ou razão social do destinatário |
+| `documento`            | string   | CNPJ ou CPF do destinatário          |
+| `endereco.logradouro`  | string   | Nome da rua / avenida                |
+| `endereco.numero`      | string   | Número do endereço                   |
+| `endereco.complemento` | string   | Complemento (opcional)               |
+| `endereco.bairro`      | string   | Bairro                               |
+| `endereco.cep`         | string   | CEP no formato 00000-000             |
+| `endereco.cidade`      | string   | Cidade                               |
+| `endereco.uf`          | string   | UF (sigla do estado)                 |
+| `endereco.pais`        | string   | País                                 |
+| `endereco.latitude`    | string   | Latitude geográfica                  |
+| `endereco.longitude`   | string   | Longitude geográfica                 |
 
 ### Destinatário
 
-| **Nome**               | **Tipo**            | **Descrição**                             |
-| :--------------------- | :------------------ | :---------------------------------------- |
-| `nome`                 | string              | Nome ou razão social do destinatário      |
-| `documento`            | string              | CNPJ ou CPF do destinatário               |
-| `tipo_parceiro`        | string              | `CLIENTE` ou `COMPANHIA`                  |
-| `email`                | string              | E-mail da unidade ou contato logístico    |
-| `prazo_armazenagem`    | int                 | Prazo que o produto pode ficar armazenado |
-| `contrato`             | string              | Numero do contrato                        |
-| `validade_contrato`    | string (YYYY-MM-DD) | Data de validade do contrato              |
-| `endereco.logradouro`  | string              | Nome da rua / avenida                     |
-| `endereco.numero`      | string              | Número do endereço                        |
-| `endereco.complemento` | string              | Complemento (opcional)                    |
-| `endereco.bairro`      | string              | Bairro                                    |
-| `endereco.cep`         | string              | CEP no formato 00000-000                  |
-| `endereco.cidade`      | string              | Cidade                                    |
-| `endereco.uf`          | string              | UF (sigla do estado)                      |
-| `endereco.pais`        | string              | País                                      |
-| `endereco.latitude`    | string              | Latitude geográfica                       |
-| `endereco.longitude`   | string              | Longitude geográfica                      |
+| **Nome**               | **Tipo** | **Descrição**                             |
+| :--------------------- | :------- | :---------------------------------------- |
+| `nome`                 | string   | Nome ou razão social do destinatário      |
+| `documento`            | string   | CNPJ ou CPF do destinatário               |
+| `tipo_parceiro`        | string   | `CLIENTE` / `CLIENTE` /  `ARMAZEM`        |
+| `prazo_armazenagem`    | int      | Prazo que o produto pode ficar armazenado |
+| `endereco.logradouro`  | string   | Nome da rua / avenida                     |
+| `endereco.numero`      | string   | Número do endereço                        |
+| `endereco.complemento` | string   | Complemento (opcional)                    |
+| `endereco.bairro`      | string   | Bairro                                    |
+| `endereco.cep`         | string   | CEP no formato 00000-000                  |
+| `endereco.cidade`      | string   | Cidade                                    |
+| `endereco.uf`          | string   | UF (sigla do estado)                      |
+| `endereco.pais`        | string   | País                                      |
+| `endereco.latitude`    | string   | Latitude geográfica                       |
+| `endereco.longitude`   | string   | Longitude geográfica                      |
 
 ### Embarque
 
-| **Nome**            | **Tipo**            | **Descrição**                                |
-| :------------------ | :------------------ | :------------------------------------------- |
-| `armazem_documento` | string              | CNPJ do armazém responsável pelo recebimento |
-| `nf_entrada`        | string              | Número da Nota Fiscal de Entrada             |
-| `data_emissao`      | string (YYYY-MM-DD) | Data de emissão da nota fiscal               |
-| `itens`             | array de objetos    | Lista de itens recebidos                     |
+| **Nome**       | **Tipo**            | **Descrição**                    |
+| :------------- | :------------------ | :------------------------------- |
+| `nf_entrada`   | string              | Número da Nota Fiscal de Entrada |
+| `data_emissao` | string (YYYY-MM-DD) | Data de emissão da nota fiscal   |
+| `itens`        | array de objetos    | Lista de itens recebidos         |
 
 ### Embarque (array dentro de \*\*`embarque.itens`)
 
@@ -89,65 +84,55 @@ Método HTTP: POST `/v1/entrada`
 
 ```json body
 [
-	{
-		"emitente": {
-			"nome": "EMPRESA EMITENTE LTDA",
-			"documento": "02.123.456/0001-01",
-			"tipo_parceiro": "EMPRESA",
-			"endereco": {
-				"logradouro": "Avenida 31 de Março",
-				"numero": "2500",
-				"complemento": "",
-				"bairro": "Centro",
-				"cep": "14870-000",
-				"cidade": "Jaboticabal",
-				"uf": "SP",
-				"pais": "BRASIL",
-				"latitude": "-21.2587",
-				"longitude": "-48.3245"
-			},
-			"email": "contato.jb@empresaemitente.com.br"
-		},
-		"destinatario": {
-			"nome": "SUPERMERCADO CIDADE NOVA",
-			"documento": "03.001.234/0001-00",
-			"tipo_parceiro": "CLIENTE",
-			"endereco": {
-				"logradouro": "Rua do Comércio",
-				"numero": "500",
-				"complemento": "Loja 01",
-				"bairro": "Vila Nova",
-				"cep": "13000-000",
-				"cidade": "Campinas",
-				"uf": "SP",
-				"pais": "BRASIL",
-				"latitude": "-22.9056",
-				"longitude": "-47.0608"
-			},
-			"email": "cidadenova@supermercado.com.br",
-			"prazo_armazenagem": 30,
-			"contrato": "C-2025-001",
-            "validade_contrato": "2027-07-20"
-		},
-		"embarque": {
-			"armazem_documento": "10.000.000/0001-10",
-			"nf_entrada": "500123",
-			"data_emissao": "2025-07-20",
-			"itens": [
-				{
-					"codigo": "1234567890123",
-					"descricao": "FERTILIZANTE NPK 20-20-20 50KG",
-					"unidade": "KG",
-					"quantidade": 1500,
-					"lote": "LOTE-A-100",
-					"data_fabricacao": "2025-06-01",
-					"data_vencimento": "2026-06-01",
-					"valor_unitario": 2.50
-				}
-			]
-		}
-	}
-]
+    {
+      "emitente": {
+        "tipo_parceiro": "CLIENTE",
+        "nome": "CLIENTE XPTO LTDA",
+        "documento": "55.444.333/0001-22",
+        "endereco": {
+          "cep": "80010-000",
+          "logradouro": "Av. Central",
+          "numero": "500",
+          "bairro": "Centro",
+          "cidade": "Curitiba",
+          "uf": "pr",
+          "pais": "Brasil"
+        }
+      },
+      "destinatario": {
+        "tipo_parceiro": "ARMAZEM",
+        "nome": "AG LOGISTICA SUL",
+        "documento": "98.765.432/0001-11",
+        "endereco": {
+          "cep": "95010-000",
+          "logradouro": "Rodovia BR-116",
+          "numero": "KM 150",
+          "bairro": "Zona Rural",
+          "cidade": "Caxias do Sul",
+          "uf": "RS",
+          "pais": "Brasil",
+          "latitude": "-29.167839",
+          "longitude": "-51.179385"
+        }
+      },
+      "embarque": {
+        "nf_entrada": "NF987654",
+        "data_emissao": "2026-02-02",
+        "itens": [
+          {
+            "codigo": "PROD-CLIENTE-01",
+            "descricao": "Produto Cliente",
+            "unidade": "UN",
+            "quantidade": "200",
+            "lote": "CL20260202",
+            "data_fabricacao": "2026-01-20",
+            "data_vencimento": "2026-06-20",
+            "valor_unitario": "5.30"
+          }
+        ]
+      }
+    }
+  ]
 ```
 
 </RequestExample>
