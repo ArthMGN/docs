@@ -20,11 +20,11 @@ Método HTTP: POST `/v1/consultar_recebimento`
 
 ## Campos
 
-| **Nome**       | **Tipo** | **Descrição**                                                                                                                                                                  |
-| :------------- | :------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `destino`      | string   | Identificador lógico do sistema consumidor da integração.<br />Usado para controle de idempotência (garante que a mesma NF não seja processada duas vezes pelo mesmo sistema). |
-| `ag_documento` | string   | Documento (CNPJ/CPF) do AG (armazém geral) a ser filtrado                                                                                                                      |
-| `limit`        | int      | Quantidade máxima de notas fiscais retornadas na consulta.                                                                                                                     |
+| **Nome**             | **Tipo** | **Descrição**                                                                                                                                                                  |
+| :------------------- | :------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `destino`            | string   | Identificador lógico do sistema consumidor da integração.<br />Usado para controle de idempotência (garante que a mesma NF não seja processada duas vezes pelo mesmo sistema). |
+| `emitente_documento` | string   | Documento (CNPJ/CPF) do Emitente a ser filtrado                                                                                                                                |
+| `limit`              | int      | Quantidade máxima de notas fiscais retornadas na consulta.                                                                                                                     |
 
 ## Exemplo
 
@@ -33,7 +33,7 @@ Método HTTP: POST `/v1/consultar_recebimento`
 ```json body
 {
   "destino": "ERP",
-  "ag_documento": "12.345.678/0001-99",
+  "emitente_documento": "11.222.333/0001-44",
   "limit": 50
 }
 ```
@@ -82,7 +82,7 @@ Método HTTP: POST `/v1/consultar_recebimento`
 
 | **Código** | **Mensagem**                               | **Causa Provável**                            |
 | :--------- | :----------------------------------------- | :-------------------------------------------- |
-| 403        | Usuário sem acesso ao armazém              | Sem vínculo com empresa ou armazém            |
+| 403        | Usuário sem acesso ao a empresa            | Sem vínculo com empresa                       |
 | 404        | Nenhuma movimentação de entrada encontrada | NF já confirmada                              |
 | 500        | Erro interno                               | Violação de política RLS, chave duplicada etc |
 

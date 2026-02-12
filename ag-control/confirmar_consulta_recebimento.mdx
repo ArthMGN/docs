@@ -20,13 +20,13 @@ Método HTTP: POST `/v1/confirmar_consulta_recebimento`
 
 ## Campos
 
-| **Nome**       | **Tipo**   | **Descrição**                                               |
-| :------------- | :--------- | :---------------------------------------------------------- |
-| `destino`      | string     | Identificador do sistema consumidor (ex: SAP, TOTVS, ETC..) |
-| `payload`      | array      | Lista de confirmações                                       |
-| `ag_documento` | string     | Documento (CNPJ) do AG                                      |
-| `nf_entrada`   | string     | Número da NF recebida                                       |
-| `nf_entrada`   | observacao | Observação livre de auditoria                               |
+| **Nome**             | **Tipo**   | **Descrição**                                               |
+| :------------------- | :--------- | :---------------------------------------------------------- |
+| `destino`            | string     | Identificador do sistema consumidor (ex: SAP, TOTVS, ETC..) |
+| `payload`            | array      | Lista de confirmações                                       |
+| `emitente_documento` | string     | Documento (CNPJ/CPF) do Emitente a ser filtrado             |
+| `nf_entrada`         | string     | Número da NF recebida                                       |
+| `observacao`         | observacao | Observação livre de auditoria                               |
 
 ## Exemplo
 
@@ -37,7 +37,7 @@ Método HTTP: POST `/v1/confirmar_consulta_recebimento`
   "destino": "SAP",
   "payload": [
     {
-      "ag_documento": "12.345.678/0001-99",
+      "emitente_documento": "11.222.333/0001-44",
       "nf_entrada": "NF123456",
       "observacao": "Processada em lote"
     },
@@ -82,7 +82,7 @@ Método HTTP: POST `/v1/confirmar_consulta_recebimento`
 
 | **Código** | **Mensagem**                               | **Causa Provável**                            |
 | :--------- | :----------------------------------------- | :-------------------------------------------- |
-| 403        | Usuário sem acesso ao armazém              | Sem vínculo com empresa ou armazém            |
+| 403        | Usuário sem acesso a empresa               | Sem vínculo com empresa                       |
 | 404        | Nenhuma movimentação de entrada encontrada | NF já consumida                               |
 | 500        | Erro interno                               | Violação de política RLS, chave duplicada etc |
 
