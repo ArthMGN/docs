@@ -26,7 +26,7 @@
     "tabs": [
       {
         "tab": "Documentação",
-        "groups": [
+        "pages": [
           {
             "group": "Comece por aqui",
             "pages": [
@@ -35,7 +35,12 @@
           },
           {
             "group": "WMS",
-            "pages": []
+            "pages": [
+              "ag-control/login-copied-1",
+              "ag-control/entrada-copied-1",
+              "ag-control/entrada-copied-2",
+              "ag-control/entrada-copied-3"
+            ]
           },
           {
             "group": "AG CONTROL",

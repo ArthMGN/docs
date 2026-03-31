@@ -1,0 +1,230 @@
+---
+title: "Estoque"
+description: "https://utilities.mgnsystem.cloud/wms/v1/estoque-geral"
+---
+
+## **Visão Geral**
+
+A API de Documentos de Saída do WMS foi desenvolvida para receber informações de **sistemas externos** e transformar esses dados em **registros estruturados** dentro do processo de expedição do armazém.
+
+Seu objetivo é permitir a integração padronizada de pedidos e notas fiscais de saída, **centralizando no backend** toda a **validação**, **normalização**, **cálculo e persistência das informações**. Com isso, a integração não depende de regras no front-end e garante maior consistência operacional.
+
+A integração segue o conceito de **processamento em lote**, permitindo o envio de um ou mais documentos na mesma requisição, com retorno estruturado por item processado.
+
+Para documentos de saída, a integração também realiza uma análise inicial de estoque:
+
+- para `nfe`, a verificação considera o **produto e o lote exato**
+- para **pedido**, a verificação considera:
+  - **produto \+ lote**, quando o lote é informado
+  - ou o **saldo total do produto**, quando o lote não é informado
+
+Com base nessa análise, os itens e o documento podem ser classificados conforme disponibilidade **total**, **parcial** ou **indisponível de estoque,** permitindo que o processo operacional já se inicie com uma visão de atendimento.
+
+Método HTTP: POST `/v1/documentos-saida`
+
+## Headers
+
+| Nome | Valor |
+| :-- | :-- |
+| Content-Type | `application/json` |
+| Authorization | `Bearer <token>` |
+
+## Campos
+
+### Documento
+
+| **Nome** | **Tipo** | **Descrição** |
+| :-- | :-- | :-- |
+| `codigo` | string | Código ou Numero |
+| `tipo` | string | `nfe` ou `pedido` |
+| `serie` | string | Série do documento |
+| `chave_acesso` | string | Chave de acesso quando o tipo de documento for `nfe` |
+| `data_emissao` | string | formato `yyyy-mm-ddd` |
+| `origem_id` | string | Identificador de origem do sistema externo |
+
+### Emitente
+
+| **Nome** | **Tipo** | **Descrição** |
+| :-- | :-- | :-- |
+| `codigo` | string | codigo interno do erp |
+| `nome` | string | Nome ou razão social do destinatário |
+| `documento` | string | CNPJ ou CPF do destinatário |
+| `tipo_pessoa` | string | `juridica` ou `fisica` |
+| `endereco.logradouro` | string | Nome da rua / avenida |
+| `endereco.numero` | string | Número do endereço |
+| `endereco.bairro` | string | Bairro |
+| `endereco.cidade` | string | Cidade |
+| `endereco.uf` | string | UF (sigla do estado) |
+| `endereco.cep` | string | CEP no formato 00000-000 |
+|  |  |  |
+
+### Destinatário
+
+| **Nome** | **Tipo** | **Descrição** |
+| :-- | :-- | :-- |
+| `codigo` | string | codigo interno do erp |
+| `nome` | string | Nome ou razão social do destinatário |
+| `documento` | string | CNPJ ou CPF do destinatário |
+| `tipo_pessoa` | string | `juridica` ou `fisica` |
+| `endereco.logradouro` | string | Nome da rua / avenida |
+| `endereco.numero` | string | Número do endereço |
+| `endereco.bairro` | string | Bairro |
+| `endereco.cidade` | string | Cidade |
+| `endereco.uf` | string | UF (sigla do estado) |
+| `endereco.cep` | string | CEP no formato 00000-000 |
+|  |  |  |
+
+### Itens \[array\]
+
+| **Nome** | **Tipo** | **Descrição** |
+| :-- | :-- | :-- |
+| `sequencial` | string | Número da Nota Fiscal de Entrada |
+| `produto` | json | Codigo do produto ou dados |
+| lote | sring | Lote do item |
+| data\_validade | sring | formato `yyyy-mm-ddd` |
+| quantidade | number | Quantidade do produto |
+| valor\_unitario | number | Valor unitário do produto |
+
+### Produto
+
+| Nome | Tipo | Descrição |
+| :-- | :-- | :-- |
+| `codigo` | string | Código do produto |
+| `descricao` | string | Descrição do produto |
+| `tipo` | string | `S` ou `L` (Sólido ou Líquido |
+| `unidade_medida` | string | CX, LT, BD,BB |
+| `peso_bruto` | number | Peso Bruto unitário do produto |
+| `peso_liquido` | number | Peso Líquido unitário do produto |
+| `peso_cubado` | number | Peso Cubado unitário do produto |
+| `valor_unitario` | number | Valor unitário do produto |
+
+## **Exemplo**
+
+<RequestExample>
+
+```json body
+[
+    {
+      "documento": {
+        "codigo": "NF654321",
+        "tipo": "nfe",
+        "serie": "1",
+        "chave_acesso": "35260312345678000199550010000043211000043210",
+        "data_emissao": "2026-03-30",
+        "origem_id": "ERP-NFE-654321"
+      },
+      "emitente": {
+        "codigo": "EMIT0002",
+        "nome": "INDÚSTRIA ALFA LTDA",
+        "documento": "33.444.555/0001-66",
+        "tipo_pessoa": "juridica",
+        "endereco": "Rua das Indústrias",
+        "numero": "500",
+        "bairro": "Distrito Industrial",
+        "cidade": "Jundiaí",
+        "uf": "SP",
+        "cep": "13200-000"
+      },
+      "destinatario": {
+        "codigo": "DEST0002",
+        "nome": "DISTRIBUIDORA BETA LTDA",
+        "documento": "44.555.666/0001-77",
+        "tipo_pessoa": "juridica",
+        "endereco": "Rodovia Anhanguera",
+        "numero": "KM 70",
+        "bairro": "Zona Rural",
+        "cidade": "Limeira",
+        "uf": "SP",
+        "cep": "13480-000"
+      },
+      "itens": [
+        {
+          "sequencial": 1,
+          "produto": {
+            "codigo": "PROD010",
+            "descricao": "Produto 010",
+            "tipo": "S",
+            "unidade_medida": "UN",
+            "peso_bruto": 12.5,
+            "peso_liquido": 12,
+            "peso_cubado": 0.08
+          },
+          "lote": "LT20260301",
+          "data_validade": "2027-03-01",
+          "quantidade": 30,
+          "valor_unitario": 22.9
+        },
+        {
+          "sequencial": 2,
+          "produto": {
+            "codigo": "PROD011",
+            "descricao": "Produto 011",
+            "tipo": "S",
+            "unidade_medida": "CX",
+            "peso_bruto": 20,
+            "peso_liquido": 19,
+            "peso_cubado": 0.12
+          },
+          "lote": "LT20260302",
+          "data_validade": "2026-11-15",
+          "quantidade": 10,
+          "peso_bruto": 200,
+          "peso_liquido": 190,
+          "peso_cubado": 1.2,
+          "valor_total": 890
+        }
+      ]
+    }
+  ]
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+	"ok": true,
+	"status": 200,
+	"message": "Integração de documentos de saída processada",
+	"resultado": [
+		{
+			"ok": true,
+			"acao": "insert",
+			"tipo": "nfe",
+			"indice": 0,
+			"status": 200,
+			"status_id": 2,
+			"emitente_id": "0ba77753-2f8e-48a3-b99d-ab6b35248c44",
+			"valor_total": 1577,
+			"documento_id": "53ca92bb-1f1e-49c1-bdc0-52088be6e8b9",
+			"status_codigo": "AGUARDANDO_ESTOQUE",
+			"destinatario_id": "d7d15787-0634-4ef7-813a-eb31088f0ea1",
+			"documento_codigo": "NF654321",
+			"peso_bruto_total": 575,
+			"itens_processados": 2,
+			"peso_cubado_total": 3.6,
+			"peso_liquido_total": 550
+		}
+	],
+	"processados": 1
+}
+```
+
+</ResponseExample>
+
+## Erros comuns
+
+| **Código** | **Mensagem** | **Causa Provável** |
+| :-- | :-- | :-- |
+| 400 | Campos obrigatórios ausentes | Campo obrigatório não enviado no payload, como <br />`documento.codigo`, `documento.tipo`, `documento.data_emissao`, <br />`emitente.nome`, `destinatario.nome` ou itens sem `produto.codigo` e `quantidade` |
+| 400 | Tipo de documento inválido | Valor de `documento.tipo` diferente dos aceitos pela API. Para saída: `pedido` ou `nfe` |
+| 401 | Sessão inválida | Token Bearer ausente, inválido, expirado ou não reconhecido. |
+| 409 | Documento já vinculado a romaneio <br />e não pode ser reprocessado | O documento já entrou no fluxo operacional e possui vínculo em `romaneios_documentos_saida`, <br />impedindo atualização pela integração |
+| 500 | Erro interno ao processar entrada | Falha inesperada no processamento da RPC, normalmente causada por inconsistência de dados, <br />relacionamento inválido ou estrutura incompleta no banco |
+|  |  |  |
+
+<Note>
+  - Se o produto, emitente ou destinatário ainda não existir, será criado automaticamente vinculado à empresa.
+  - A função respeita as **RLS policies** para garantir que o usuário só altere dados da empresa à qual está vinculado.
+</Note>

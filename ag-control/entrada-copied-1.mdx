@@ -1,0 +1,213 @@
+---
+title: "Documentos de Entrada"
+description: "https://utilities.mgnsystem.cloud/wms/v1/documentos-entrada"
+---
+
+## **Visão Geral**
+
+A API de Documentos de Entrada do WMS foi desenvolvida para receber informações de **sistemas externos** e transformar esses dados em registros estruturados dentro do processo de recebimento do armazém.
+
+Seu objetivo é permitir a **integração padronizada** de documentos de entrada, centralizando no backend toda a validação, normalização e persistência das informações. Com isso, a integração não depende de regras no front-end e garante maior consistência operacional.
+
+A integração segue o conceito de **processamento em lote**, permitindo o envio de um ou mais documentos na mesma requisição, com retorno estruturado por item processado.
+
+Método HTTP: POST `/v1/documentos-entrada`
+
+## Headers
+
+| Nome | Valor |
+| :-- | :-- |
+| Content-Type | `application/json` |
+| Authorization | `Bearer <token>` |
+
+## Campos
+
+### Documento
+
+| **Nome** | **Tipo** | **Descrição** |
+| :-- | :-- | :-- |
+| `codigo` | string | Código ou Numero |
+| `tipo` | string | `nfe` ou `op` |
+| `serie` | string | Série do documento |
+| `data_emissao` | string | formato `yyyy-mm-ddd` |
+|  |  |  |
+
+### Emitente
+
+| **Nome** | **Tipo** | **Descrição** |
+| :-- | :-- | :-- |
+| `codigo` | string | codigo interno do erp |
+| `nome` | string | Nome ou razão social do destinatário |
+| `documento` | string | CNPJ ou CPF do destinatário |
+| `tipo_pessoa` | string | `juridica` ou `fisica` |
+| `endereco.logradouro` | string | Nome da rua / avenida |
+| `endereco.numero` | string | Número do endereço |
+| `endereco.bairro` | string | Bairro |
+| `endereco.cidade` | string | Cidade |
+| `endereco.uf` | string | UF (sigla do estado) |
+| `endereco.cep` | string | CEP no formato 00000-000 |
+|  |  |  |
+
+### Destinatário
+
+| **Nome** | **Tipo** | **Descrição** |
+| :-- | :-- | :-- |
+| `codigo` | string | codigo interno do erp |
+| `nome` | string | Nome ou razão social do destinatário |
+| `documento` | string | CNPJ ou CPF do destinatário |
+| `tipo_pessoa` | string | `juridica` ou `fisica` |
+| `endereco.logradouro` | string | Nome da rua / avenida |
+| `endereco.numero` | string | Número do endereço |
+| `endereco.bairro` | string | Bairro |
+| `endereco.cidade` | string | Cidade |
+| `endereco.uf` | string | UF (sigla do estado) |
+| `endereco.cep` | string | CEP no formato 00000-000 |
+|  |  |  |
+
+### Itens \[array\]
+
+| **Nome** | **Tipo** | **Descrição** |
+| :-- | :-- | :-- |
+| `sequencial` | string | Número da Nota Fiscal de Entrada |
+| `produto` | json | Codigo do produto ou dados |
+| lote | sring | Lote do item |
+| data\_validade | sring | formato `yyyy-mm-ddd` |
+| quantidade | number | Quantidade do produto |
+| valor\_unitario | number | Valor unitário do produto |
+
+### Produto
+
+| Nome | Tipo | Descrição |
+| :-- | :-- | :-- |
+| `codigo` | string | Código do produto |
+| `descricao` | string | Descrição do produto |
+| `tipo` | string | `S` ou `L` (Sólido ou Líquido |
+| `unidade_medida` | string | CX, LT, BD,BB |
+| `peso_bruto` | number | Peso Bruto unitário do produto |
+| `peso_liquido` | number | Peso Líquido unitário do produto |
+| `peso_cubado` | number | Peso Cubado unitário do produto |
+| `valor_unitario` | number | Valor unitário do produto |
+
+## **Exemplo**
+
+<RequestExample>
+
+```json body
+[
+	{
+		"documento": {
+			"codigo": "NF987654",
+			"tipo": "nfe",
+			"serie": "1",
+			"data_emissao": "2026-02-02"
+		},
+		"emitente": {
+			"codigo": "EMIT0001",
+			"nome": "EMPRESA EMBARCADORA LTDA",
+			"documento": "55.444.333/0001-22",
+			"tipo_pessoa": "juridica",
+			"endereco": "Av. Central",
+			"numero": "500",
+			"bairro": "Centro",
+			"cidade": "Curitiba",
+			"uf": "PR",
+			"cep": "80010-000"
+		},
+		"destinatario": {
+			"codigo": "DEST0001",
+			"nome": "AG LOGISTICA SUL",
+			"documento": "98.765.432/0001-11",
+			"tipo_pessoa": "juridica",
+			"endereco": "Rodovia BR-116",
+			"numero": "KM 150",
+			"bairro": "Zona Rural",
+			"cidade": "Caxias do Sul",
+			"uf": "RS",
+			"cep": "95010-000"
+		},
+		"itens": [
+			{
+				"sequencial": 1,
+				"produto": {
+					"codigo": "PROD-COMPANHIA-01",
+					"descricao": "Produto COMPANHIA",
+					"tipo": "S",
+					"unidade_medida": "UN",
+					"peso_bruto": 12.5,
+					"peso_liquido": 12.0,
+					"peso_cubado": 0.08
+				},
+				"lote": "CL20260202",
+				"data_validade": "2026-06-20",
+				"quantidade": 200,
+				"valor_unitario": 5.30
+			},
+			{
+				"sequencial": 2,
+				"produto": {
+					"codigo": "PROD-COMPANHIA-02",
+					"descricao": "Produto COMPANHIA 02",
+					"tipo": "S",
+					"unidade_medida": "CX",
+					"peso_bruto": 8.0,
+					"peso_liquido": 7.5,
+					"peso_cubado": 0.05
+				},
+				"lote": "CL20260203",
+				"data_validade": "2026-07-15",
+				"quantidade": 50,
+				"peso_bruto": 400,
+				"peso_liquido": 375,
+				"peso_cubado": 2.5,
+				"valor_total": 425.00
+			}
+		]
+	}
+]
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+	"ok": true,
+	"status": 200,
+	"message": "Integração de documentos de entrada processada",
+	"resultado": [
+		{
+			"ok": true,
+			"acao": "update",
+			"indice": 0,
+			"status": 200,
+			"emitente_id": "8d10b4f4-fdce-4a0f-ab15-d6c8781aefaf",
+			"valor_total": 1485,
+			"documento_id": "fea86313-a5bc-40d4-8b73-18359d68a9cc",
+			"destinatario_id": "bf74cf56-3b79-4a15-8f7d-b9e6cbd8f2e1",
+			"documento_codigo": "NF987654",
+			"peso_bruto_total": 2900,
+			"itens_processados": 2,
+			"peso_cubado_total": 18.5,
+			"peso_liquido_total": 2775
+		}
+	],
+	"processados": 1
+}
+```
+
+</ResponseExample>
+
+## Erros comuns
+
+| **Código** | **Mensagem** | **Causa Provável** |
+| :-- | :-- | :-- |
+| 400 | Campos obrigatórios ausentes | Campo obrigatório não enviado no payload, como <br />`documento.codigo`, `documento.tipo`, `documento.data_emissao`, <br />`emitente.nome`, `destinatario.nome` ou itens sem `produto.codigo` e `quantidade` |
+| 400 | Tipo de documento inválido | Valor de `documento.tipo` diferente dos aceitos pela API. Para entrada: `nfe` ou `op` |
+| 401 | Sessão inválida | Token Bearer ausente, inválido, expirado ou não reconhecido |
+| 500 | Erro interno ao processar entrada | Falha inesperada no processamento da RPC, normalmente causada por inconsistência de dados, relacionamento inválido ou estrutura incompleta no banco |
+
+<Note>
+  - Se o produto, emitente ou destinatário ainda não existir, será criado automaticamente vinculado à empresa.
+  - A função respeita as **RLS policies** para garantir que o usuário só altere dados da empresa à qual está vinculado.
+</Note>
