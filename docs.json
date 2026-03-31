@@ -36,10 +36,10 @@
           {
             "group": "WMS",
             "pages": [
-              "ag-control/login-copied-1",
-              "ag-control/entrada-copied-1",
-              "ag-control/entrada-copied-2",
-              "ag-control/entrada-copied-3"
+              "wms/login",
+              "wms/documentos-entrada",
+              "wms/documentos-saida",
+              "wms/estoque-geral"
             ]
           },
           {
