@@ -1,6 +1,6 @@
 ---
 title: "Estoque Geral"
-description: "https://utilities.mgnsystem.cloud/wms/v1/estoque-geral"
+description: "https://[url.projeto]/wms/v1/consultar-estoque"
 ---
 
 ## **Visão Geral**
@@ -37,7 +37,7 @@ Método HTTP: POST `/v1/estoque-geral`
 | `lote` | string | Lote do produto |
 | `endereco_codigo` | string | Exemplo: A-01-B-001 |
 | `etiqueta_codigo` | string | Código da etiqueta |
-| `agrupar_por` | string | Aceita: `produto` `produto_lote` `endereco` `etiqueta` |
+| `agrupar_por` | string | Aceita: `produtoproduto_loteenderecoetiqueta` |
 
 ## **Exemplo**
 
@@ -59,33 +59,36 @@ Método HTTP: POST `/v1/estoque-geral`
 {
 	"ok": true,
 	"status": 200,
-	"filtros": {
-		"lote": "AGA0919",
-		"agrupar_por": "produto_lote",
-		"produto_codigo": "AGUA001",
-		"endereco_codigo": null,
-		"etiqueta_codigo": null
-	},
 	"message": "Consulta de estoque realizada com sucesso",
-	"resultado": [
-		{
-			"lote": "AGA0919",
-			"produto_id": "c65d04f2-3d05-4175-868b-1a7c4c1b9096",
-			"total_linhas": 4,
-			"data_validade": "2039-01-01",
-			"produto_codigo": "AGUA001",
-			"unidade_medida": "UN",
-			"total_enderecos": 3,
-			"total_etiquetas": 4,
-			"peso_bruto_total": 0,
-			"quantidade_total": 1000,
-			"produto_descricao": "Água Mineral sem Gás 1,5L",
-			"peso_liquido_total": 0,
-			"quantidade_bloqueada": 0,
-			"quantidade_reservada": 0,
-			"quantidade_disponivel": 1000
-		}
-	]
+	"request_id": "ID REQUEST",
+	"data": {
+		"filtros": {
+			"lote": null,
+			"agrupar_por": "produto_lote",
+			"produto_codigo": null,
+			"endereco_codigo": null,
+			"etiqueta_codigo": null
+		},
+		"resultado": [
+			{
+				"lote": "1738/18",
+				"produto_id": "ID PRODUTO",
+				"total_linhas": 4,
+				"data_validade": "2029-01-01",
+				"produto_codigo": "AGUA001",
+				"unidade_medida": "UN",
+				"total_enderecos": 3,
+				"total_etiquetas": 4,
+				"peso_bruto_total": 0,
+				"quantidade_total": 1000,
+				"produto_descricao": "Água Mineral sem Gás 1,5L",
+				"peso_liquido_total": 0,
+				"quantidade_bloqueada": 0,
+				"quantidade_reservada": 0,
+				"quantidade_disponivel": 1000
+			}
+		]
+	}
 }
 ```
 
