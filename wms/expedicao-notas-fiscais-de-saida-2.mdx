@@ -1,0 +1,303 @@
+---
+title: "Expedição (Notas Fiscais de Saída)"
+description: "https://[url.projeto]/wms/v1/expedicao"
+---
+
+## **Visão Geral**
+
+A API de Notas Fiscais de Saída do WMS foi desenvolvida para receber de **sistemas externos** as notas fiscais emitidas após a conclusão do processo de separação e conferência no armazém.
+
+Seu objetivo é concluir o fluxo de expedição iniciado anteriormente por meio da API de **Documentos de Saída**.
+
+O fluxo esperado é:
+
+1. O sistema externo consulta a disponibilidade de estoque.
+2. O pedido é enviado ao WMS através da API de Documentos de Saída.
+3. O WMS realiza o processo de separação e conferência.
+4. Após a conclusão da operação, o pedido é disponibilizado para faturamento.
+5. O sistema externo realiza o faturamento.
+6. A Nota Fiscal emitida é enviada ao WMS através desta API.
+7. O WMS valida a Nota Fiscal contra os documentos e quantidades efetivamente conferidas.
+8. Após a validação, a Nota Fiscal é vinculada aos documentos e ao romaneio correspondente.
+
+Uma única Nota Fiscal pode estar relacionada a **um ou mais Documentos de Saída**, desde que todos pertençam ao mesmo romaneio.
+
+Cada Documento de Saída, entretanto, pode ser faturado por **apenas uma Nota Fiscal**.
+
+A integração também valida os itens da Nota Fiscal contra os itens efetivamente conferidos durante a separação, considerando:
+
+- produto;
+- lote;
+- unidade de medida;
+- quantidade conferida.
+
+Quando houver divergência entre a Nota Fiscal e a conferência realizada no WMS, a operação é rejeitada e nenhuma informação da Nota Fiscal é persistida.
+
+A integração segue o conceito de **processamento em lote**, permitindo o envio de uma ou mais Notas Fiscais na mesma requisição, com retorno individual para cada registro processado.
+
+Método HTTP: POST `/v1/expedicao`
+
+## Headers
+
+| Nome | Valor |
+| :-- | :-- |
+| Content-Type | `application/json` |
+| Authorization | `Bearer <token>` |
+
+## Campos
+
+### Nota Fiscal
+
+| **Nome** | **Tipo** | **Obrigatório** | **Descrição** |
+| :-- | :-- | :-: | :-- |
+| `numero` | string | Sim | Número da Nota Fiscal |
+| `serie` | string | Sim | Série da Nota Fiscal |
+| `chave_acesso` | string | Não | Chave de acesso da NF-e. Quando informada deve possuir 44 dígitos |
+| `data_emissao` | string | Sim | Data de emissão no formato `yyyy-mm-dd` |
+| `valor_total` | number | Não | Valor total da Nota Fiscal |
+| `peso_bruto_total` | number | Não | Peso bruto total da Nota Fiscal |
+| `peso_liquido_total` | number | Não | Peso líquido total da Nota Fiscal |
+| `peso_cubado_total` | number | Não | Peso cubado total da Nota Fiscal |
+
+Quando os totais não forem informados, o WMS poderá calculá-los a partir dos itens e dos dados cadastrados dos produtos.
+
+### Expedição
+
+| **Nome** | **Tipo** | **Obrigatório** | **Descrição** |
+| :-- | :-- | :-: | :-- |
+| `romaneio_id` | uuid | Sim | Identificador do romaneio de saída retornado pelo WMS |
+| `documentos` | array | Sim | Documentos de Saída que foram faturados pela Nota Fiscal |
+
+Todos os documentos informados devem pertencer ao mesmo romaneio.
+
+### Documentos da Expedição
+
+| **Nome** | **Tipo** | **Obrigatório** | **Descrição** |
+| :-- | :-- | :-: | :-- |
+| `documento_saida_id` | uuid | Sim | Identificador do Documento de Saída no WMS |
+| `origem_id` | string | Não | Identificador do pedido no sistema de origem |
+
+Quando `origem_id` for informado, o WMS também valida se o valor corresponde ao identificador recebido anteriormente na criação do Documento de Saída.
+
+### Emitente
+
+| **Nome** | **Tipo** | **Descrição** |
+| :-- | :-- | :-- |
+| `codigo` | string | Código interno do emitente no sistema externo |
+| `nome` | string | Nome ou razão social |
+| `documento` | string | CNPJ ou CPF |
+| `tipo_pessoa` | string | `juridica` ou `fisica` |
+| `endereco` | string | Nome da rua / avenida |
+| `numero` | string | Número do endereço |
+| `bairro` | string | Bairro |
+| `cidade` | string | Cidade |
+| `uf` | string | UF |
+| `cep` | string | CEP |
+
+### Destinatário
+
+| **Nome** | **Tipo** | **Descrição** |
+| :-- | :-- | :-- |
+| `codigo` | string | Código interno do destinatário no sistema externo |
+| `nome` | string | Nome ou razão social |
+| `documento` | string | CNPJ ou CPF |
+| `tipo_pessoa` | string | `juridica` ou `fisica` |
+| `endereco` | string | Nome da rua / avenida |
+| `numero` | string | Número do endereço |
+| `bairro` | string | Bairro |
+| `cidade` | string | Cidade |
+| `uf` | string | UF |
+| `cep` | string | CEP |
+
+### Itens [array]
+
+| **Nome** | **Tipo** | **Obrigatório** | **Descrição** |
+| :-- | :-- | :-: | :-- |
+| `produto` | json | Sim | Dados do produto |
+| `cfop` | string | Não | CFOP do item da Nota Fiscal |
+| `ncm` | string | Não | NCM do produto |
+| `unidade` | string | Não | Unidade utilizada na Nota Fiscal |
+| `lote` | string | Não | Lote do produto |
+| `data_validade` | string | Não | Data de validade no formato `yyyy-mm-dd` |
+| `quantidade` | number | Sim | Quantidade faturada |
+| `valor_unitario` | number | Não | Valor unitário do item |
+| `valor_total` | number | Não | Valor total do item |
+| `peso_bruto` | number | Não | Peso bruto total do item |
+| `peso_liquido` | number | Não | Peso líquido total do item |
+| `peso_cubado` | number | Não | Peso cubado total do item |
+
+Caso `valor_total` não seja informado e `valor_unitario` seja enviado, o WMS calcula:
+
+`quantidade × valor_unitario`
+
+Quando os pesos totais do item não forem informados, poderão ser calculados através da quantidade e dos pesos unitários cadastrados no produto.
+
+### Produto
+
+| **Nome** | **Tipo** | **Descrição** |
+| :-- | :-- | :-- |
+| `codigo` | string | Código do produto |
+| `descricao` | string | Descrição do produto |
+| `tipo` | string | `S` ou `L` (Sólido ou Líquido) |
+| `unidade_medida` | string | Unidade padrão do produto, por exemplo `UN`, `CX`, `LT`, `BD` ou `BB` |
+| `peso_bruto` | number | Peso bruto unitário do produto |
+| `peso_liquido` | number | Peso líquido unitário do produto |
+| `peso_cubado` | number | Peso cubado unitário do produto |
+
+## Validações da Expedição
+
+Antes de concluir o faturamento, o WMS realiza as seguintes validações:
+
+- o romaneio precisa existir e pertencer à empresa autenticada;
+- todos os Documentos de Saída precisam existir;
+- todos os documentos precisam pertencer ao romaneio informado;
+- quando informado, o `origem_id` precisa corresponder ao Documento de Saída;
+- um Documento de Saída não pode estar vinculado a outra Nota Fiscal;
+- os documentos precisam possuir itens efetivamente conferidos;
+- os itens da Nota Fiscal precisam corresponder à soma dos itens conferidos dos documentos informados;
+- a comparação é realizada por produto, lote e unidade;
+- a quantidade faturada precisa corresponder à quantidade efetivamente conferida.
+
+## Uma Nota Fiscal para vários pedidos
+
+É permitido que vários Documentos de Saída sejam faturados em uma única Nota Fiscal.
+
+## **Exemplo**
+
+<RequestExample>
+
+```json body
+[
+    {
+      "nota_fiscal": {
+        "numero": "999001",
+        "serie": "1",
+        "chave_acesso": "35260955444333000122550010009990011000000001",
+        "data_emissao": "2026-09-29"
+      },
+      "expedicao": {
+        "romaneio_id": "3969719e-9bb1-440c-9dbd-297027e014ff",
+        "documentos": [
+          {
+            "documento_saida_id": "22a4ec13-03d1-46bb-9308-10ae7fd28821",
+            "origem_id": "9098"
+          }
+        ]
+      },
+      "emitente": {
+        "codigo": "EMIT0001",
+        "nome": "EMPRESA EMBARCADORA LTDA",
+        "documento": "55.444.333/0001-22",
+        "tipo_pessoa": "juridica"
+      },
+      "destinatario": {
+        "codigo": "DEST-40876123000152",
+        "nome": "Farmácia Bem Estar Campinas Ltda",
+        "documento": "40.876.123/0001-52",
+        "tipo_pessoa": "juridica",
+        "cidade": "Campinas",
+        "uf": "SP"
+      },
+      "itens": [
+        {
+          "produto": {
+            "codigo": "PROD-COMPANHIA-02",
+            "descricao": "Produto COMPANHIA 02",
+            "tipo": "S",
+            "unidade_medida": "CX"
+          },
+          "unidade": "CX",
+          "lote": "CL20260203",
+          "data_validade": "2026-11-15",
+          "quantidade": 50
+        }
+      ]
+    }
+  ]
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+	"ok": true,
+	"status": 200,
+	"message": "Integração de notas fiscais de saída processada",
+	"request_id": "6d05e6fa-f399-423f-8396-d896333675c8",
+	"data": {
+		"resultado": [
+			{
+				"ok": true,
+				"acao": "insert",
+				"serie": "1",
+				"indice": 0,
+				"numero": "999001",
+				"status": 200,
+				"message": "Nota fiscal integrada. Documentos faturados e romaneio finalizado.",
+				"idempotente": false,
+				"romaneio_id": "3969719e-9bb1-440c-9dbd-297027e014ff",
+				"valor_total": 0,
+				"chave_acesso": "35260955444333000122550010009990011000000001",
+				"nota_fiscal_id": "aa246821-21b9-4634-a059-d9bd17331a62",
+				"documentos_saida": [
+					"22a4ec13-03d1-46bb-9308-10ae7fd28821"
+				],
+				"peso_bruto_total": 400,
+				"itens_processados": 1,
+				"peso_cubado_total": 2.5,
+				"romaneio_faturado": true,
+				"peso_liquido_total": 375,
+				"quantidade_documentos": 1
+			}
+		],
+		"processados": 1
+	}
+}
+```
+
+</ResponseExample>
+
+## Erros comuns
+
+| Código | Mensagem | Causa Provável |
+| --: | --- | --- |
+| 400 | `nota_fiscal.numero é obrigatório` | O número da Nota Fiscal não foi informado no payload. |
+| 400 | `nota_fiscal.serie é obrigatória` | A série da Nota Fiscal não foi informada. |
+| 400 | `nota_fiscal.data_emissao é obrigatória` | A data de emissão não foi informada ou está em formato inválido. |
+| 400 | `nota_fiscal.chave_acesso deve conter 44 dígitos` | A chave de acesso foi informada, porém não possui 44 dígitos. |
+| 400 | `Nota fiscal deve possuir ao menos um item` | O array `itens` não foi informado ou está vazio. |
+| 400 | `expedicao.romaneio_id é obrigatório` | O identificador do romaneio de saída não foi informado. |
+| 400 | `expedicao.romaneio_id inválido` | O valor informado em `romaneio_id` não possui formato UUID válido. |
+| 400 | `expedicao.documentos deve possuir ao menos um documento` | Nenhum Documento de Saída foi informado para a Nota Fiscal. |
+| 400 | `documento_saida_id inválido` | O identificador de um dos Documentos de Saída não possui formato UUID válido. |
+| 400 | `Documento de saída repetido na mesma nota` | O mesmo `documento_saida_id` foi enviado mais de uma vez na mesma Nota Fiscal. |
+| 400 | `emitente.nome é obrigatório` | O nome ou razão social do emitente não foi informado. |
+| 400 | `emitente.tipo_pessoa inválido` | O campo `tipo_pessoa` possui valor diferente de `fisica` ou `juridica`. |
+| 400 | `destinatario.nome é obrigatório` | O nome ou razão social do destinatário não foi informado. |
+| 400 | `destinatario.tipo_pessoa inválido` | O campo `tipo_pessoa` possui valor diferente de `fisica` ou `juridica`. |
+| 400 | `Item sem produto.codigo` | Um item da Nota Fiscal foi enviado sem o código do produto. |
+| 400 | `Produto ... sem descrição` | O produto informado não possui descrição no payload. |
+| 400 | `produto.tipo inválido` | O tipo do produto é diferente de `S` ou `L`. |
+| 400 | `Quantidade inválida para o produto` | A quantidade do item não foi informada, é inválida ou menor/igual a zero. |
+| 401 | `Sessão inválida` | Token Bearer ausente, inválido, expirado ou não reconhecido. |
+| 404 | `Romaneio não encontrado para a empresa` | O `romaneio_id` não existe ou pertence a outra empresa. |
+| 404 | `Documento de saída não encontrado` | O Documento de Saída informado não existe ou pertence a outra empresa. |
+| 409 | `Documento já está vinculado a outra nota fiscal` | O Documento de Saída já foi faturado e está relacionado a outra Nota Fiscal. |
+| 409 | `Documento já está marcado como faturado` | O documento encontra-se com status faturado, porém não possui vínculo esperado com a Nota Fiscal. |
+| 409 | `Nota fiscal já possui vínculo com outros documentos de saída` | A mesma Nota Fiscal foi reenviada com um conjunto diferente de Documentos de Saída. |
+| 409 | `Nota fiscal já está vinculada a um romaneio` | A Nota Fiscal já entrou anteriormente no fluxo de expedição. |
+| 409 | `Nota fiscal já possui processo de conferência iniciado` | Já existe uma conferência de Nota Fiscal associada ao registro. |
+| 409 | `Registro já vinculado ou nota fiscal duplicada` | Violação de unicidade, normalmente causada por chave de acesso duplicada ou vínculo já existente. |
+| 422 | `Documento não pertence ao romaneio informado` | O Documento de Saída informado não está associado ao `romaneio_id` recebido. |
+| 422 | `origem_id não corresponde ao documento` | O identificador do pedido no sistema externo não corresponde ao `origem_id` registrado no WMS. |
+| 422 | `Existem documentos sem itens conferidos no roteiro` | Um ou mais documentos ainda não possuem quantidades efetivamente conferidas no processo de separação. |
+| 422 | `Itens da nota fiscal não correspondem aos itens conferidos dos documentos` | Existe divergência de produto, lote, unidade ou quantidade entre a Nota Fiscal e a conferência realizada no WMS. |
+| 500 | `Status FATURADO não encontrado` | A configuração dos status de Documento de Saída ou Romaneio está incompleta no banco. |
+| 500 | `Erro interno ao processar nota fiscal` | Falha inesperada no processamento da RPC, causada por inconsistência de dados, relacionamento inválido ou erro interno |
+
+<Note>
+  - Se o produto, emitente ou destinatário ainda não existir, será criado automaticamente vinculado à empresa.
+  - A função respeita as **RLS policies** para garantir que o usuário só altere dados da empresa à qual está vinculado.
+</Note>
