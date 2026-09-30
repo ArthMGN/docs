@@ -39,8 +39,8 @@
               "wms/login",
               "wms/documentos-entrada",
               "wms/documentos-saida",
-              "wms/expedicao-notas-fiscais-de-saida-2",
-              "wms/estoque-geral"
+              "wms/estoque-geral",
+              "wms/expedicao-notas-fiscais-de-saida-2"
             ]
           },
           {
