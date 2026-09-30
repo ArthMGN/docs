@@ -1,0 +1,443 @@
+---
+title: "Documentos de Entrada"
+description: "https://[url.projeto]/wms/v1/documentos-entrada"
+---
+
+## Visão Geral
+
+A API de Documentos de Entrada do WMS foi desenvolvida para receber informações de **sistemas externos** e transformar esses dados em registros estruturados dentro do processo de recebimento do armazém.
+
+Seu objetivo é permitir a integração padronizada de documentos de entrada, centralizando no backend as regras de:
+
+- validação dos dados recebidos;
+- identificação da empresa através do usuário autenticado;
+- criação e atualização de emitentes e destinatários;
+- criação e atualização de produtos;
+- cálculo de valores e pesos;
+- criação ou atualização do Documento de Entrada;
+- criação dos respectivos itens.
+
+A integração segue o conceito de **processamento em lote**, permitindo o envio de um ou mais documentos na mesma requisição.
+
+Cada documento do lote é processado individualmente, permitindo que um documento seja rejeitado sem impedir o processamento dos demais.
+
+São aceitos os seguintes tipos de Documento de Entrada:
+
+- `nfe` — Nota Fiscal de Entrada;
+- `op` — Ordem de Produção.
+
+Quando um documento ainda não existe no WMS, ele será criado.
+
+Quando já existir e ainda **não estiver vinculado a um romaneio de entrada**, seus dados poderão ser atualizados e seus itens serão recriados com base nas informações recebidas na nova requisição.
+
+Após o documento ser vinculado a um romaneio, seu reprocessamento através desta integração não será permitido.
+
+Método HTTP: `POST /v1/documentos-entrada`
+
+## Headers
+
+| Nome | Valor |
+| :-- | :-- |
+| Content-Type | `application/json` |
+| Authorization | `Bearer <token>` |
+
+## Campos
+
+### Documento
+
+| Nome | Tipo | Obrigatório | Descrição |
+| :-- | :-- | :-: | :-- |
+| `codigo` | string | Sim | Código ou número do documento no sistema de origem |
+| `tipo` | string | Sim | Tipo do documento. Valores aceitos: `nfe` ou `op` |
+| `serie` | string | Não | Série do documento |
+| `data_emissao` | string | Sim | Data de emissão no formato `yyyy-mm-dd` |
+
+O documento é identificado no WMS através da combinação entre empresa, código, tipo, série e emitente.
+
+### Emitente
+
+| Nome | Tipo | Obrigatório | Descrição |
+| :-- | :-- | :-: | :-- |
+| `codigo` | string | Não | Código interno do emitente no sistema externo |
+| `nome` | string | Sim | Nome ou razão social do emitente |
+| `documento` | string | Não | CNPJ ou CPF do emitente |
+| `tipo_pessoa` | string | Não | `juridica` ou `fisica`. Quando não informado, será considerado `juridica` |
+| `endereco` | string | Não | Nome da rua / avenida |
+| `numero` | string | Não | Número do endereço |
+| `bairro` | string | Não | Bairro |
+| `cidade` | string | Não | Cidade |
+| `uf` | string | Não | UF |
+| `cep` | string | Não | CEP |
+
+Para localizar um emitente existente, o WMS procura inicialmente pelo `documento` e, caso não seja localizado, pelo `codigo`.
+
+Caso nenhum registro seja encontrado, um novo emitente será criado.
+
+Quando `codigo` não for informado durante a criação, o WMS gera automaticamente um código interno.
+
+### Destinatário
+
+| Nome | Tipo | Obrigatório | Descrição |
+| :-- | :-- | :-: | :-- |
+| `codigo` | string | Não | Código interno do destinatário no sistema externo |
+| `nome` | string | Sim | Nome ou razão social do destinatário |
+| `documento` | string | Não | CNPJ ou CPF do destinatário |
+| `tipo_pessoa` | string | Não | `juridica` ou `fisica`. Quando não informado, será considerado `juridica` |
+| `endereco` | string | Não | Nome da rua / avenida |
+| `numero` | string | Não | Número do endereço |
+| `bairro` | string | Não | Bairro |
+| `cidade` | string | Não | Cidade |
+| `uf` | string | Não | UF |
+| `cep` | string | Não | CEP |
+
+Para localizar um destinatário existente, o WMS procura inicialmente pelo `documento` e, caso não seja localizado, pelo `codigo`.
+
+Caso nenhum registro seja encontrado, um novo destinatário será criado.
+
+Quando `codigo` não for informado durante a criação, o WMS gera automaticamente um código interno.
+
+### Itens [array]
+
+Cada Documento de Entrada deve possuir pelo menos um item.
+
+| Nome | Tipo | Obrigatório | Descrição |
+| :-- | :-- | :-: | :-- |
+| `sequencial` | integer | Não | Sequência do item dentro do documento. Quando não informado, o WMS atribui automaticamente |
+| `produto` | json | Sim | Dados do produto |
+| `lote` | string | Não | Lote do produto |
+| `data_validade` | string | Não | Data de validade no formato `yyyy-mm-dd` |
+| `quantidade` | number | Sim | Quantidade do produto. Deve ser maior que zero |
+| `valor_unitario` | number | Não | Valor unitário utilizado para cálculo do valor total do item |
+| `valor_total` | number | Não | Valor total do item |
+| `peso_bruto` | number | Não | Peso bruto total do item |
+| `peso_liquido` | number | Não | Peso líquido total do item |
+| `peso_cubado` | number | Não | Peso cubado total do item |
+
+Quando `valor_total` não for informado e `valor_unitario` estiver presente, o WMS calcula:
+
+```text
+quantidade × valor_unitario
+```
+
+Quando nenhum dos dois valores for enviado, o valor do item será considerado `0`.
+
+Para os pesos, quando o peso total não for informado diretamente no item, o WMS utiliza:
+
+```text
+quantidade × peso unitário do produto
+```
+
+### Produto
+
+| Nome | Tipo | Obrigatório | Descrição |
+| :-- | :-- | :-: | :-- |
+| `codigo` | string | Sim | Código do produto |
+| `descricao` | string | Sim | Descrição do produto |
+| `tipo` | string | Não | `S` ou `L`. Quando não informado, será utilizado `S` |
+| `unidade_medida` | string | Não | Unidade padrão do produto, como `UN`, `CX`, `LT`, `BD` ou `BB` |
+| `peso_bruto` | number | Não | Peso bruto unitário do produto |
+| `peso_liquido` | number | Não | Peso líquido unitário do produto |
+| `peso_cubado` | number | Não | Peso cubado unitário do produto |
+
+O produto é localizado através do seu `codigo` dentro da empresa autenticada.
+
+Caso o produto ainda não exista, será criado automaticamente.
+
+Caso já exista, as informações recebidas poderão atualizar descrição, tipo, unidade de medida e pesos cadastrados.
+
+## Cálculo dos Totais
+
+Os totais do Documento de Entrada são calculados automaticamente a partir dos itens processados.
+
+São calculados:
+
+- valor total;
+- peso bruto total;
+- peso líquido total;
+- peso cubado total.
+
+Exemplo:
+
+```text
+Produto:
+Peso bruto unitário = 8 kg
+
+Item:
+Quantidade = 50
+Peso bruto total não informado
+
+Cálculo:
+50 × 8 = 400 kg
+```
+
+Caso o item envie diretamente:
+
+```json
+{
+  "quantidade": 50,
+  "peso_bruto": 400
+}
+```
+
+o valor informado no item será utilizado.
+
+## Reprocessamento
+
+Enquanto o Documento de Entrada ainda não estiver associado a um romaneio, ele poderá ser reenviado pela integração.
+
+Neste caso, o WMS:
+
+1. localiza o documento existente;
+2. atualiza os dados principais;
+3. remove os itens anteriores;
+4. recria os itens com base no novo payload;
+5. recalcula os totais.
+
+O retorno apresentará:
+
+```json
+{
+  "acao": "update"
+}
+```
+
+Caso o documento já esteja vinculado a um romaneio de entrada, o reprocessamento será rejeitado com status `409`.
+
+## Exemplo
+
+<RequestExample>
+
+```json body
+[
+  {
+    "documento": {
+      "codigo": "NF547654",
+      "tipo": "nfe",
+      "serie": "1",
+      "data_emissao": "2026-02-02"
+    },
+    "emitente": {
+      "codigo": "EMIT0001",
+      "nome": "EMPRESA EMBARCADORA LTDA",
+      "documento": "55.444.333/0001-22",
+      "tipo_pessoa": "juridica",
+      "endereco": "Av. Central",
+      "numero": "500",
+      "bairro": "Centro",
+      "cidade": "Curitiba",
+      "uf": "PR",
+      "cep": "80010-000"
+    },
+    "destinatario": {
+      "codigo": "DEST0001",
+      "nome": "AG LOGISTICA SUL",
+      "documento": "98.765.432/0001-11",
+      "tipo_pessoa": "juridica",
+      "endereco": "Rodovia BR-116",
+      "numero": "KM 150",
+      "bairro": "Zona Rural",
+      "cidade": "Caxias do Sul",
+      "uf": "RS",
+      "cep": "95010-000"
+    },
+    "itens": [
+      {
+        "sequencial": 1,
+        "produto": {
+          "codigo": "PROD-COMPANHIA-01",
+          "descricao": "Produto COMPANHIA",
+          "tipo": "S",
+          "unidade_medida": "UN",
+          "peso_bruto": 12.5,
+          "peso_liquido": 12,
+          "peso_cubado": 0.08
+        },
+        "lote": "CL20260202",
+        "data_validade": "2026-06-20",
+        "quantidade": 200,
+        "valor_unitario": 5.30
+      },
+      {
+        "sequencial": 2,
+        "produto": {
+          "codigo": "PROD-COMPANHIA-02",
+          "descricao": "Produto COMPANHIA 02",
+          "tipo": "S",
+          "unidade_medida": "CX",
+          "peso_bruto": 8,
+          "peso_liquido": 7.5,
+          "peso_cubado": 0.05
+        },
+        "lote": "CL20260203",
+        "data_validade": "2026-07-15",
+        "quantidade": 50,
+        "peso_bruto": 400,
+        "peso_liquido": 375,
+        "peso_cubado": 2.5,
+        "valor_total": 425
+      }
+    ]
+  }
+]
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "ok": true,
+  "status": 200,
+  "message": "Integração de documentos de entrada processada",
+  "resultado": [
+    {
+      "indice": 0,
+      "ok": true,
+      "status": 200,
+      "acao": "insert",
+      "documento_id": "ID DOCUMENTO",
+      "documento_codigo": "NF547654",
+      "emitente_id": "ID EMITENTE",
+      "destinatario_id": "ID DESTINATARIO",
+      "itens_processados": 2,
+      "valor_total": 1485,
+      "peso_bruto_total": 2900,
+      "peso_liquido_total": 2775,
+      "peso_cubado_total": 18.5
+    }
+  ],
+  "processados": 1
+}
+```
+
+</ResponseExample>
+
+## Processamento em lote
+
+A API permite o envio de diversos Documentos de Entrada em uma mesma requisição.
+
+Cada posição do array é processada individualmente.
+
+Exemplo conceitual:
+
+```json
+[
+  {
+    "documento": {
+      "codigo": "NF1001",
+      "tipo": "nfe",
+      "data_emissao": "2026-09-29"
+    },
+    "emitente": {
+      "nome": "FORNECEDOR 01"
+    },
+    "destinatario": {
+      "nome": "CENTRO DE DISTRIBUIÇÃO"
+    },
+    "itens": [
+      {
+        "produto": {
+          "codigo": "PROD001",
+          "descricao": "Produto 001"
+        },
+        "quantidade": 10
+      }
+    ]
+  },
+  {
+    "documento": {
+      "codigo": "NF1002",
+      "tipo": "nfe",
+      "data_emissao": "2026-09-29"
+    },
+    "emitente": {
+      "nome": "FORNECEDOR 02"
+    },
+    "destinatario": {
+      "nome": "CENTRO DE DISTRIBUIÇÃO"
+    },
+    "itens": [
+      {
+        "produto": {
+          "codigo": "PROD002",
+          "descricao": "Produto 002"
+        },
+        "quantidade": 20
+      }
+    ]
+  }
+]
+```
+
+O status geral representa o processamento do lote.
+
+Por isso, a requisição pode retornar HTTP `200` mesmo quando um documento individual apresentar erro.
+
+O sistema integrador deve avaliar:
+
+```text
+resultado[].ok
+resultado[].status
+```
+
+para identificar o resultado individual de cada Documento de Entrada.
+
+Exemplo:
+
+```json
+{
+  "ok": true,
+  "status": 200,
+  "message": "Integração de documentos de entrada processada",
+  "resultado": [
+    {
+      "indice": 0,
+      "ok": true,
+      "status": 200,
+      "acao": "insert"
+    },
+    {
+      "indice": 1,
+      "ok": false,
+      "status": 400,
+      "message": "Quantidade inválida para o produto PROD002"
+    }
+  ],
+  "processados": 2
+}
+```
+
+## Erros comuns
+
+| Código | Mensagem | Causa Provável |
+| :-- | :-- | :-- |
+| 400 | `p_payload deve ser um array JSON` | O corpo recebido pela integração não está no formato de array esperado |
+| 400 | `p_payload não pode ser vazio` | Foi enviado um array sem documentos |
+| 400 | `Campo itens deve ser um array` | A propriedade `itens` não foi enviada como array |
+| 400 | `Documento sem itens` | O Documento de Entrada foi enviado sem nenhum item |
+| 400 | `documento.codigo é obrigatório` | Código ou número do documento não informado |
+| 400 | `documento.tipo é obrigatório` | Tipo do documento não informado |
+| 400 | `documento.tipo inválido. Valores aceitos: nfe, op` | Tipo diferente de `nfe` ou `op` |
+| 400 | `documento.data_emissao é obrigatório` | Data de emissão não informada |
+| 400 | `emitente.nome é obrigatório` | Nome ou razão social do emitente não informado |
+| 400 | `emitente.tipo_pessoa inválido` | Valor diferente de `fisica` ou `juridica` |
+| 400 | `destinatario.nome é obrigatório` | Nome ou razão social do destinatário não informado |
+| 400 | `destinatario.tipo_pessoa inválido` | Valor diferente de `fisica` ou `juridica` |
+| 400 | `Item sem produto.codigo` | Um item foi enviado sem o código do produto |
+| 400 | `Item sem produto.descricao` | Um item foi enviado sem a descrição do produto |
+| 400 | `produto.tipo inválido` | Tipo do produto diferente de `S` ou `L` |
+| 400 | `Quantidade inválida para o produto` | Quantidade ausente, inválida ou menor/igual a zero |
+| 401 | `Sessão inválida` | Token Bearer ausente, inválido, expirado ou não reconhecido |
+| 401 | `Não foi possível determinar a empresa` | Usuário autenticado não está corretamente associado a uma empresa |
+| 409 | `Documento já vinculado a romaneio e não pode ser reprocessado` | O documento já entrou no fluxo operacional de recebimento |
+| 500 | `Tabela status_documentos_entrada sem registros válidos` | Não existem registros disponíveis para inicialização do status do Documento de Entrada |
+
+<Note>
+  - Se o produto, emitente ou destinatário ainda não existir, será criado automaticamente e vinculado à empresa do usuário autenticado.
+  - O Documento de Entrada pode ser atualizado através da integração enquanto ainda não estiver vinculado a um romaneio.
+  - Após o vínculo com um romaneio, o documento não poderá mais ser reprocessado por esta API.
+  - Quando o peso total do item não for informado, o WMS calcula o peso através da quantidade multiplicada pelo peso unitário cadastrado no produto.
+  - Quando `valor_total` não for informado, mas `valor_unitario` estiver presente, o WMS calcula automaticamente o valor do item.
+  - O processamento de cada documento do lote é isolado. Uma falha em um documento não impede o processamento dos demais.
+</Note>

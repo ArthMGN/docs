@@ -3,22 +3,37 @@ title: "Estoque Geral"
 description: "https://[url.projeto]/wms/v1/consultar-estoque"
 ---
 
-## **Visão Geral**
+## Visão Geral
 
-A API de Consulta de Estoque do WMS foi desenvolvida para permitir que sistemas externos consultem a \*\*posição atual de estoque \*\*de forma **padronizada**, segura e **performática**.
+A API de Estoque Geral do WMS foi desenvolvida para permitir que **sistemas externos** consultem a posição atual de estoque da empresa autenticada de forma padronizada e segura.
 
-Seu objetivo é disponibilizar uma visão consolidada ou detalhada do estoque da empresa autenticada, respeitando o contexto multi-tenant do WMS e aplicando os filtros informados na requisição.
+A consulta permite visualizar o estoque em diferentes níveis de consolidação, possibilitando integrações com ERPs, portais, sistemas legados e outras aplicações externas.
 
-A consulta pode ser realizada com base em diferentes critérios, como:
+É possível filtrar a consulta por:
 
-- `código do produto`
-- `lote`
-- `endereço`
-- `etiqueta`
+- código do produto;
+- lote;
+- endereço;
+- etiqueta.
 
-Dessa forma, a API de Consulta de Estoque permite integrar o WMS com ERPs, portais, sistemas legados ou outras aplicações externas, oferecendo uma **visão confiável** e atualizada do estoque armazenado.
+Além dos filtros, o integrador pode definir como as informações serão agrupadas.
 
-Método HTTP: POST `/v1/estoque-geral`
+Os agrupamentos disponíveis são:
+
+- `produto`;
+- `produto_lote`;
+- `endereco`;
+- `etiqueta`.
+
+Quando `agrupar_por` não for informado, o WMS utiliza automaticamente:
+
+```text
+produto_lote
+```
+
+A consulta sempre é limitada à **empresa associada ao usuário autenticado**.
+
+Método HTTP: `POST /v1/consultar-estoque`
 
 ## Headers
 
@@ -29,17 +44,248 @@ Método HTTP: POST `/v1/estoque-geral`
 
 ## Campos
 
-### Produto
+Todos os filtros são opcionais.
 
-| Nome | Tipo | Descrição |
-| :-- | :-- | :-- |
-| `produto_codigo` | string | Código do produto |
-| `lote` | string | Lote do produto |
-| `endereco_codigo` | string | Exemplo: A-01-B-001 |
-| `etiqueta_codigo` | string | Código da etiqueta |
-| `agrupar_por` | string | Aceita: `produtoproduto_loteenderecoetiqueta` |
+| Nome | Tipo | Obrigatório | Descrição |
+| :-- | :-- | :-: | :-- |
+| `produto_codigo` | string | Não | Código do produto |
+| `lote` | string | Não | Lote do produto |
+| `endereco_codigo` | string | Não | Código do endereço. Exemplo: `A-01-B-001` |
+| `etiqueta_codigo` | string | Não | Código da etiqueta |
+| `agrupar_por` | string | Não | Forma de agrupamento. Valores aceitos: `produto`, `produto_lote`, `endereco` ou `etiqueta` |
 
-## **Exemplo**
+Os filtros podem ser combinados.
+
+Exemplo:
+
+```json
+{
+  "produto_codigo": "AGUA001",
+  "lote": "AGA0919",
+  "endereco_codigo": "A-01-B-001",
+  "agrupar_por": "produto_lote"
+}
+```
+
+## Normalização dos Filtros
+
+Os campos abaixo são normalizados para letras maiúsculas antes da consulta:
+
+```text
+produto_codigo
+endereco_codigo
+etiqueta_codigo
+```
+
+O campo `agrupar_por` é normalizado para letras minúsculas.
+
+O campo `lote` é utilizado conforme informado após a remoção de espaços no início e no final.
+
+## Registros considerados na consulta
+
+A API retorna somente registros de estoque que possuam:
+
+```text
+quantidade_disponivel > 0
+```
+
+Além disso, registros de estoque com os seguintes `status_id` não são considerados:
+
+```text
+0
+5
+```
+
+<Note>
+  A consulta considera a quantidade disponível registrada no estoque. Registros sem quantidade disponível positiva não são retornados, mesmo que possuam quantidade reservada ou bloqueada.
+</Note>
+
+## Quantidades
+
+Dependendo do agrupamento utilizado, a resposta poderá apresentar:
+
+| Campo | Descrição |
+| :-- | :-- |
+| `quantidade_disponivel` | Quantidade disponível registrada no estoque |
+| `quantidade_reservada` | Quantidade atualmente reservada |
+| `quantidade_bloqueada` | Quantidade atualmente bloqueada |
+| `quantidade_total` | Soma das quantidades disponível, reservada e bloqueada |
+
+O cálculo de `quantidade_total` é:
+
+```text
+quantidade_disponivel
++ quantidade_reservada
++ quantidade_bloqueada
+```
+
+<Note>
+  `quantidade_total` representa a soma física registrada na posição consultada. Ela não deve ser interpretada como quantidade livre para novas reservas.
+</Note>
+
+## Agrupamentos
+
+### produto
+
+Agrupa todos os registros de estoque por produto.
+
+Exemplo de requisição:
+
+<RequestExample>
+
+```json body
+{
+  "produto_codigo": "AGUA001",
+  "agrupar_por": "produto"
+}
+```
+
+</RequestExample>
+
+O retorno por produto contém:
+
+| Campo | Descrição |
+| :-- | :-- |
+| `produto_id` | Identificador interno do produto |
+| `produto_codigo` | Código do produto |
+| `produto_descricao` | Descrição do produto |
+| `unidade_medida` | Unidade de medida cadastrada |
+| `total_linhas` | Quantidade de registros de estoque considerados |
+| `total_enderecos` | Quantidade de endereços distintos |
+| `total_etiquetas` | Quantidade de etiquetas distintas |
+| `quantidade_disponivel` | Soma da quantidade disponível |
+| `quantidade_reservada` | Soma da quantidade reservada |
+| `quantidade_bloqueada` | Soma da quantidade bloqueada |
+| `quantidade_total` | Soma total das quantidades |
+| `peso_bruto_total` | Peso bruto total |
+| `peso_liquido_total` | Peso líquido total |
+| `validade_min` | Menor data de validade encontrada |
+| `validade_max` | Maior data de validade encontrada |
+
+### produto_lote
+
+Agrupa o estoque por:
+
+```text
+produto + lote + data de validade
+```
+
+Este é o agrupamento padrão da API.
+
+Exemplo:
+
+<RequestExample>
+
+```json body
+{
+  "produto_codigo": "AGUA001",
+  "lote": "AGA0919",
+  "agrupar_por": "produto_lote"
+}
+```
+
+</RequestExample>
+
+O retorno contém:
+
+| Campo | Descrição |
+| :-- | :-- |
+| `produto_id` | Identificador interno do produto |
+| `produto_codigo` | Código do produto |
+| `produto_descricao` | Descrição do produto |
+| `unidade_medida` | Unidade de medida |
+| `lote` | Lote do produto |
+| `data_validade` | Data de validade |
+| `total_linhas` | Quantidade de registros de estoque |
+| `total_enderecos` | Quantidade de endereços distintos |
+| `total_etiquetas` | Quantidade de etiquetas distintas |
+| `quantidade_disponivel` | Quantidade disponível |
+| `quantidade_reservada` | Quantidade reservada |
+| `quantidade_bloqueada` | Quantidade bloqueada |
+| `quantidade_total` | Quantidade total |
+| `peso_bruto_total` | Peso bruto total |
+| `peso_liquido_total` | Peso líquido total |
+
+### endereco
+
+Agrupa os registros por endereço físico do armazém.
+
+Exemplo:
+
+<RequestExample>
+
+```json body
+{
+  "endereco_codigo": "A-01-B-001",
+  "agrupar_por": "endereco"
+}
+```
+
+</RequestExample>
+
+O retorno contém:
+
+| Campo | Descrição |
+| :-- | :-- |
+| `endereco_id` | Identificador interno do endereço |
+| `endereco_codigo` | Código do endereço |
+| `endereco_label` | Identificação completa do endereço |
+| `total_linhas` | Quantidade de registros de estoque |
+| `total_produtos` | Quantidade de produtos distintos |
+| `total_etiquetas` | Quantidade de etiquetas distintas |
+| `quantidade_disponivel` | Quantidade disponível |
+| `quantidade_reservada` | Quantidade reservada |
+| `quantidade_bloqueada` | Quantidade bloqueada |
+| `quantidade_total` | Quantidade total |
+| `peso_bruto_total` | Peso bruto total |
+| `peso_liquido_total` | Peso líquido total |
+
+### etiqueta
+
+Retorna o estoque detalhado por etiqueta.
+
+Diferentemente dos demais agrupamentos, neste modo cada registro mantém informações específicas da posição de estoque.
+
+Exemplo:
+
+<RequestExample>
+
+```json body
+{
+  "etiqueta_codigo": "ET20260000001",
+  "agrupar_por": "etiqueta"
+}
+```
+
+</RequestExample>
+
+O retorno contém:
+
+| Campo | Descrição |
+| :-- | :-- |
+| `estoque_id` | Identificador do registro de estoque |
+| `produto_id` | Identificador do produto |
+| `produto_codigo` | Código do produto |
+| `produto_descricao` | Descrição do produto |
+| `unidade_medida` | Unidade de medida |
+| `lote` | Lote |
+| `data_validade` | Data de validade |
+| `endereco_id` | Identificador do endereço |
+| `endereco_codigo` | Código do endereço |
+| `endereco_label` | Identificação do endereço |
+| `etiqueta_id` | Identificador interno da etiqueta |
+| `etiqueta_codigo` | Código da etiqueta |
+| `quantidade_disponivel` | Quantidade disponível |
+| `quantidade_reservada` | Quantidade reservada |
+| `quantidade_bloqueada` | Quantidade bloqueada |
+| `quantidade_total` | Quantidade total |
+| `peso_bruto` | Peso bruto |
+| `peso_liquido` | Peso líquido |
+| `status_id` | Identificador do status do estoque |
+| `status_codigo` | Código do status |
+| `status_descricao` | Descrição do status |
+
+## Exemplo
 
 <RequestExample>
 
@@ -57,54 +303,150 @@ Método HTTP: POST `/v1/estoque-geral`
 
 ```json 200
 {
-	"ok": true,
-	"status": 200,
-	"message": "Consulta de estoque realizada com sucesso",
-	"request_id": "ID REQUEST",
-	"data": {
-		"filtros": {
-			"lote": null,
-			"agrupar_por": "produto_lote",
-			"produto_codigo": null,
-			"endereco_codigo": null,
-			"etiqueta_codigo": null
-		},
-		"resultado": [
-			{
-				"lote": "1738/18",
-				"produto_id": "ID PRODUTO",
-				"total_linhas": 4,
-				"data_validade": "2029-01-01",
-				"produto_codigo": "AGUA001",
-				"unidade_medida": "UN",
-				"total_enderecos": 3,
-				"total_etiquetas": 4,
-				"peso_bruto_total": 0,
-				"quantidade_total": 1000,
-				"produto_descricao": "Água Mineral sem Gás 1,5L",
-				"peso_liquido_total": 0,
-				"quantidade_bloqueada": 0,
-				"quantidade_reservada": 0,
-				"quantidade_disponivel": 1000
-			}
-		]
-	}
+  "ok": true,
+  "status": 200,
+  "message": "Consulta de estoque realizada com sucesso",
+  "request_id": "ID REQUEST",
+  "data": {
+    "filtros": {
+      "produto_codigo": "AGUA001",
+      "lote": "AGA0919",
+      "endereco_codigo": null,
+      "etiqueta_codigo": null,
+      "agrupar_por": "produto_lote"
+    },
+    "resultado": [
+      {
+        "produto_id": "ID PRODUTO",
+        "produto_codigo": "AGUA001",
+        "produto_descricao": "Água Mineral sem Gás 1,5L",
+        "unidade_medida": "UN",
+        "lote": "AGA0919",
+        "data_validade": "2029-01-01",
+        "total_linhas": 4,
+        "total_enderecos": 3,
+        "total_etiquetas": 4,
+        "quantidade_disponivel": 1000,
+        "quantidade_reservada": 0,
+        "quantidade_bloqueada": 0,
+        "quantidade_total": 1000,
+        "peso_bruto_total": 0,
+        "peso_liquido_total": 0
+      }
+    ]
+  }
 }
 ```
 
 </ResponseExample>
 
+## Consulta sem filtros
+
+Todos os filtros são opcionais.
+
+Uma requisição sem filtros pode ser enviada como:
+
+<RequestExample>
+
+```json body
+{}
+```
+
+</RequestExample>
+
+Nesse caso, o WMS utiliza automaticamente:
+
+```text
+agrupar_por = produto_lote
+```
+
+e retorna o estoque da empresa autenticada agrupado por produto, lote e data de validade.
+
+## Combinação de filtros
+
+Os filtros podem ser utilizados em conjunto.
+
+Exemplo:
+
+```json
+{
+  "produto_codigo": "PROD001",
+  "lote": "LT20260001",
+  "endereco_codigo": "A-01-B-001",
+  "agrupar_por": "etiqueta"
+}
+```
+
+Nesse cenário, somente registros que atendam a **todos os filtros informados** serão considerados.
+
+## Retorno sem estoque
+
+Quando nenhum registro de estoque atender aos filtros informados, a requisição continua sendo considerada válida.
+
+Exemplo:
+
+<ResponseExample>
+
+```json 200
+{
+  "ok": true,
+  "status": 200,
+  "message": "Consulta de estoque realizada com sucesso",
+  "data": {
+    "filtros": {
+      "produto_codigo": "PROD-INEXISTENTE",
+      "lote": null,
+      "endereco_codigo": null,
+      "etiqueta_codigo": null,
+      "agrupar_por": "produto_lote"
+    },
+    "resultado": []
+  }
+}
+```
+
+</ResponseExample>
+
+A ausência de estoque não é tratada como erro da integração.
+
 ## Erros comuns
 
-| **Código** | **Mensagem** | **Causa Provável** |
+| Código | Mensagem | Causa Provável |
 | :-- | :-- | :-- |
-| 400 | Parâmetro `agrupar_por` inválido | Valor diferente dos aceitos pela API. Valores permitidos: <br />`produto`, `produto_lote`, `endereco`, `etiqueta` |
-| 401 | Sessão inválida | Token Bearer ausente, inválido, expirado ou não reconhecido. |
-| 400 | Parâmetros enviados em formato inválido | Algum campo de filtro foi enviado em formato incompatível com o esperado |
-| 400 | Filtro de consulta inválido | Um ou mais filtros informados não puderam ser processados corretamente |
-| 500 | Erro interno ao processar entrada | Falha inesperada no processamento da RPC, normalmente causada por inconsistência de dados, <br />relacionamento inválido ou estrutura incompleta no banco |
+| 400 | `p_agrupar_por inválido. Valores aceitos: produto, produto_lote, endereco, etiqueta` | O valor informado em `agrupar_por` não corresponde a um dos agrupamentos disponíveis |
+| 401 | `Sessão inválida` | Token Bearer ausente, inválido, expirado ou não reconhecido |
+| 401 | `Não foi possível determinar a empresa` | O usuário autenticado não está corretamente associado a uma empresa |
+| 500 | Erro interno ao consultar estoque | Falha inesperada durante o processamento da consulta ou acesso às informações de estoque |
+
+## Observações sobre os agrupamentos
+
+Os campos retornados variam de acordo com o valor de `agrupar_por`.
+
+Por exemplo:
+
+```text
+produto
+→ consolida todas as posições do produto
+
+produto_lote
+→ consolida por produto + lote + validade
+
+endereco
+→ consolida todo o estoque existente no endereço
+
+etiqueta
+→ retorna as posições de estoque individualizadas por etiqueta
+```
+
+Por esse motivo, sistemas integradores devem interpretar a estrutura de `resultado` conforme o agrupamento solicitado.
 
 <Note>
-  - Se nenhum parâmetro for enviado na requisição, o sistema aplicará automaticamente o filtro `"agrupar_por": "produto_lote"`.
-  - A função respeita as **RLS policies** para garantir que o usuário só altere dados da empresa à qual está vinculado.
+  - Se `agrupar_por` não for informado, será utilizado automaticamente `produto_lote`.
+  - Todos os filtros são opcionais e podem ser combinados.
+  - A consulta é restrita à empresa vinculada ao usuário autenticado.
+  - Somente registros com `quantidade_disponivel` maior que zero são retornados.
+  - Registros com `status_id` igual a `0` ou `5` não são considerados.
+  - `quantidade_total` corresponde à soma de `quantidade_disponivel`, `quantidade_reservada` e `quantidade_bloqueada`.
+  - O agrupamento `etiqueta` apresenta o maior nível de detalhamento disponível nesta consulta.
+  - A API é exclusivamente de consulta e não realiza reserva, bloqueio ou movimentação de estoque.
 </Note>

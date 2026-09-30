@@ -3,24 +3,38 @@ title: "Documentos de Saída"
 description: "https://[url.projeto]/wms/v1/documentos-saida"
 ---
 
-## **Visão Geral**
+## Visão Geral
 
-A API de Documentos de Saída do WMS foi desenvolvida para receber informações de **sistemas externos** e transformar esses dados em **registros estruturados** dentro do processo de expedição do armazém.
+A API de Documentos de Saída do WMS foi desenvolvida para receber informações de **sistemas externos** e transformá-las em registros estruturados dentro do processo de expedição do armazém.
 
-Seu objetivo é permitir a integração padronizada de pedidos e notas fiscais de saída, **centralizando no backend** toda a **validação**, **normalização**, **cálculo e persistência das informações**. Com isso, a integração não depende de regras no front-end e garante maior consistência operacional.
+Seu objetivo é permitir a integração padronizada de pedidos e documentos fiscais de saída, centralizando no backend as regras de:
 
-A integração segue o conceito de **processamento em lote**, permitindo o envio de um ou mais documentos na mesma requisição, com retorno estruturado por item processado.
+- validação dos dados recebidos;
+- identificação da empresa através do usuário autenticado;
+- criação e atualização de emitentes e destinatários;
+- criação e atualização de produtos;
+- cálculo de valores e pesos;
+- criação ou atualização do Documento de Saída;
+- criação dos respectivos itens;
+- análise inicial da disponibilidade de estoque;
+- definição automática do status inicial do documento.
 
-Para documentos de saída, a integração também realiza uma análise inicial de estoque:
+A integração segue o conceito de **processamento em lote**, permitindo o envio de um ou mais documentos na mesma requisição.
 
-- para `nfe`, a verificação considera o **produto e o lote exato**
-- para **pedido**, a verificação considera:
-  - **produto \+ lote**, quando o lote é informado
-  - ou o **saldo total do produto**, quando o lote não é informado
+Cada documento do lote é processado individualmente, permitindo que um documento seja rejeitado sem impedir o processamento dos demais.
 
-Com base nessa análise, os itens e o documento podem ser classificados conforme disponibilidade **total**, **parcial** ou **indisponível de estoque,** permitindo que o processo operacional já se inicie com uma visão de atendimento.
+São aceitos os seguintes tipos de Documento de Saída:
 
-Método HTTP: POST `/v1/documentos-saida`
+- `pedido` — Pedido de saída;
+- `nfe` — Nota Fiscal Eletrônica de saída.
+
+Quando um documento ainda não existe no WMS, ele será criado.
+
+Quando já existir e ainda **não estiver vinculado a um romaneio de saída**, seus dados poderão ser atualizados e seus itens serão recriados com base nas informações recebidas na nova requisição.
+
+Após o documento ser vinculado a um romaneio, seu reprocessamento através desta integração não será permitido.
+
+Método HTTP: `POST /v1/documentos-saida`
 
 ## Headers
 
@@ -33,198 +47,626 @@ Método HTTP: POST `/v1/documentos-saida`
 
 ### Documento
 
-| **Nome** | **Tipo** | **Descrição** |
-| :-- | :-- | :-- |
-| `codigo` | string | Código ou Numero |
-| `tipo` | string | `nfe` ou `pedido` |
-| `serie` | string | Série do documento |
-| `chave_acesso` | string | Chave de acesso quando o tipo de documento for `nfe` |
-| `data_emissao` | string | formato `yyyy-mm-ddd` |
-| `origem_id` | string | Identificador de origem do sistema externo |
+| Nome | Tipo | Obrigatório | Descrição |
+| :-- | :-- | :-: | :-- |
+| `codigo` | string | Sim | Código ou número do documento no sistema de origem |
+| `tipo` | string | Sim | Tipo do documento. Valores aceitos: `pedido` ou `nfe` |
+| `serie` | string | Condicional | Obrigatória para `nfe` e não permitida para `pedido` |
+| `chave_acesso` | string | Condicional | Obrigatória para `nfe`. Deve conter 44 dígitos. Não permitida para `pedido` |
+| `data_emissao` | string | Sim | Data de emissão no formato `yyyy-mm-dd` |
+| `origem_id` | string | Não | Identificador do documento no sistema de origem |
+
+O documento é identificado no WMS através da combinação entre empresa, código, tipo, série e emitente.
+
+O campo `codigo` é normalizado para letras maiúsculas.
+
+Para documentos do tipo `nfe`, a série também é normalizada pelo WMS.
+
+Exemplo:
+
+```text
+Série recebida: 1
+Série armazenada: 001
+```
+
+A chave de acesso é normalizada mantendo apenas caracteres numéricos e deve possuir exatamente **44 dígitos**.
+
+### Regras por tipo de documento
+
+#### Pedido
+
+Para documentos do tipo `pedido`:
+
+- `serie` não deve ser enviada;
+- `chave_acesso` não deve ser enviada;
+- o lote dos itens é opcional;
+- quando o lote for informado, a análise de estoque considera produto + lote;
+- quando o lote não for informado, a análise considera o saldo total disponível do produto.
+
+#### NF-e
+
+Para documentos do tipo `nfe`:
+
+- `serie` é obrigatória;
+- `chave_acesso` é obrigatória;
+- a chave deve possuir 44 dígitos;
+- `lote` é obrigatório em todos os itens;
+- a análise de estoque considera produto + lote exato.
+
+<Note>
+  Em fluxos nos quais o WMS recebe inicialmente um pedido, realiza a separação e posteriormente recebe a Nota Fiscal após o faturamento, o fluxo recomendado é utilizar `pedido` nesta API e posteriormente utilizar a API de **Notas Fiscais de Saída** para concluir o processo de faturamento.
+</Note>
 
 ### Emitente
 
-| **Nome** | **Tipo** | **Descrição** |
-| :-- | :-- | :-- |
-| `codigo` | string | codigo interno do erp |
-| `nome` | string | Nome ou razão social do destinatário |
-| `documento` | string | CNPJ ou CPF do destinatário |
-| `tipo_pessoa` | string | `juridica` ou `fisica` |
-| `endereco.logradouro` | string | Nome da rua / avenida |
-| `endereco.numero` | string | Número do endereço |
-| `endereco.bairro` | string | Bairro |
-| `endereco.cidade` | string | Cidade |
-| `endereco.uf` | string | UF (sigla do estado) |
-| `endereco.cep` | string | CEP no formato 00000-000 |
-|  |  |  |
+| Nome | Tipo | Obrigatório | Descrição |
+| :-- | :-- | :-: | :-- |
+| `codigo` | string | Não | Código interno do emitente no sistema externo |
+| `nome` | string | Sim | Nome ou razão social do emitente |
+| `documento` | string | Não | CNPJ ou CPF do emitente |
+| `tipo_pessoa` | string | Não | `juridica` ou `fisica`. Quando não informado, será considerado `juridica` |
+| `endereco` | string | Não | Nome da rua / avenida |
+| `numero` | string | Não | Número do endereço |
+| `bairro` | string | Não | Bairro |
+| `cidade` | string | Não | Cidade |
+| `uf` | string | Não | UF |
+| `cep` | string | Não | CEP |
+
+Para localizar um emitente existente, o WMS procura inicialmente pelo `documento` e, caso não seja localizado, pelo `codigo`.
+
+Caso nenhum registro seja encontrado, um novo emitente será criado.
+
+Quando `codigo` não for informado durante a criação, o WMS gera automaticamente um código interno.
 
 ### Destinatário
 
-| **Nome** | **Tipo** | **Descrição** |
-| :-- | :-- | :-- |
-| `codigo` | string | codigo interno do erp |
-| `nome` | string | Nome ou razão social do destinatário |
-| `documento` | string | CNPJ ou CPF do destinatário |
-| `tipo_pessoa` | string | `juridica` ou `fisica` |
-| `endereco.logradouro` | string | Nome da rua / avenida |
-| `endereco.numero` | string | Número do endereço |
-| `endereco.bairro` | string | Bairro |
-| `endereco.cidade` | string | Cidade |
-| `endereco.uf` | string | UF (sigla do estado) |
-| `endereco.cep` | string | CEP no formato 00000-000 |
-|  |  |  |
+| Nome | Tipo | Obrigatório | Descrição |
+| :-- | :-- | :-: | :-- |
+| `codigo` | string | Não | Código interno do destinatário no sistema externo |
+| `nome` | string | Sim | Nome ou razão social do destinatário |
+| `documento` | string | Não | CNPJ ou CPF do destinatário |
+| `tipo_pessoa` | string | Não | `juridica` ou `fisica`. Quando não informado, será considerado `juridica` |
+| `endereco` | string | Não | Nome da rua / avenida |
+| `numero` | string | Não | Número do endereço |
+| `bairro` | string | Não | Bairro |
+| `cidade` | string | Não | Cidade |
+| `uf` | string | Não | UF |
+| `cep` | string | Não | CEP |
+
+Para localizar um destinatário existente, o WMS procura inicialmente pelo `documento` e, caso não seja localizado, pelo `codigo`.
+
+Caso nenhum registro seja encontrado, um novo destinatário será criado.
+
+Quando `codigo` não for informado durante a criação, o WMS gera automaticamente um código interno.
 
 ### Itens \[array\]
 
-| **Nome** | **Tipo** | **Descrição** |
-| :-- | :-- | :-- |
-| `sequencial` | string | Número da Nota Fiscal de Entrada |
-| `produto` | json | Codigo do produto ou dados |
-| lote | sring | Lote do item |
-| data\_validade | sring | formato `yyyy-mm-ddd` |
-| quantidade | number | Quantidade do produto |
-| valor\_unitario | number | Valor unitário do produto |
+Cada Documento de Saída deve possuir pelo menos um item.
+
+| Nome | Tipo | Obrigatório | Descrição |
+| :-- | :-- | :-: | :-- |
+| `sequencial` | integer | Não | Sequência do item dentro do documento. Quando não informado, o WMS atribui automaticamente |
+| `produto` | json | Sim | Dados do produto |
+| `lote` | string | Condicional | Obrigatório para documentos do tipo `nfe` e opcional para `pedido` |
+| `data_validade` | string | Não | Data de validade no formato `yyyy-mm-dd` |
+| `quantidade` | number | Sim | Quantidade solicitada. Deve ser maior que zero |
+| `valor_unitario` | number | Não | Valor unitário utilizado para cálculo do valor total |
+| `valor_total` | number | Não | Valor total do item |
+| `peso_bruto` | number | Não | Peso bruto total do item |
+| `peso_liquido` | number | Não | Peso líquido total do item |
+| `peso_cubado` | number | Não | Peso cubado total do item |
+
+Quando `valor_total` não for informado e `valor_unitario` estiver presente, o WMS calcula:
+
+```text
+quantidade × valor_unitario
+```
+
+Quando nenhum dos dois valores for enviado, o valor do item será considerado `0`.
+
+Para os pesos, quando o peso total não for informado diretamente no item, o WMS utiliza:
+
+```text
+quantidade × peso unitário do produto
+```
 
 ### Produto
 
-| Nome | Tipo | Descrição |
-| :-- | :-- | :-- |
-| `codigo` | string | Código do produto |
-| `descricao` | string | Descrição do produto |
-| `tipo` | string | `S` ou `L` (Sólido ou Líquido |
-| `unidade_medida` | string | CX, LT, BD,BB |
-| `peso_bruto` | number | Peso Bruto unitário do produto |
-| `peso_liquido` | number | Peso Líquido unitário do produto |
-| `peso_cubado` | number | Peso Cubado unitário do produto |
-| `valor_unitario` | number | Valor unitário do produto |
+| Nome | Tipo | Obrigatório | Descrição |
+| :-- | :-- | :-: | :-- |
+| `codigo` | string | Sim | Código do produto |
+| `descricao` | string | Sim | Descrição do produto |
+| `tipo` | string | Não | `S` ou `L`. Quando não informado, será utilizado `S` |
+| `unidade_medida` | string | Não | Unidade padrão do produto, como `UN`, `CX`, `LT`, `BD` ou `BB` |
+| `peso_bruto` | number | Não | Peso bruto unitário do produto |
+| `peso_liquido` | number | Não | Peso líquido unitário do produto |
+| `peso_cubado` | number | Não | Peso cubado unitário do produto |
 
-## **Exemplo**
+O produto é localizado através do seu `codigo` dentro da empresa autenticada.
+
+Caso o produto ainda não exista, será criado automaticamente.
+
+Caso já exista, as informações recebidas poderão atualizar descrição, tipo, unidade de medida e pesos cadastrados.
+
+## Cálculo dos Totais
+
+Os totais do Documento de Saída são calculados automaticamente a partir dos itens processados.
+
+São calculados:
+
+- valor total;
+- peso bruto total;
+- peso líquido total;
+- peso cubado total.
+
+Exemplo:
+
+```text
+Produto:
+Peso bruto unitário = 12,5 kg
+
+Item:
+Quantidade = 30
+Peso bruto total não informado
+
+Cálculo:
+30 × 12,5 = 375 kg
+```
+
+Caso o item envie diretamente:
+
+```json
+{
+  "quantidade": 30,
+  "peso_bruto": 375
+}
+```
+
+o peso informado no item será utilizado.
+
+## Análise de Estoque
+
+Após criar os itens do Documento de Saída, o WMS realiza uma análise inicial da disponibilidade de estoque.
+
+O saldo disponível considerado pela integração é calculado através de:
+
+```text
+quantidade disponível
+- quantidade reservada
+- quantidade bloqueada
+```
+
+Somente quantidades positivas são consideradas disponíveis para atendimento.
+
+### NF-e
+
+Para documentos do tipo `nfe`, a análise considera:
+
+```text
+produto + lote exato
+```
+
+Exemplo:
+
+```text
+Produto: PROD001
+Lote: LT2026001
+Quantidade solicitada: 50
+
+Estoque considerado:
+somente PROD001 no lote LT2026001
+```
+
+### Pedido com lote
+
+Para documentos do tipo `pedido` que possuem lote informado:
+
+```text
+produto + lote exato
+```
+
+### Pedido sem lote
+
+Para documentos do tipo `pedido` sem lote informado:
+
+```text
+saldo total disponível do produto
+```
+
+Nesse cenário, o estoque poderá existir distribuído entre diferentes lotes.
+
+## Classificação do Estoque
+
+Cada item é avaliado conforme o saldo disponível.
+
+### Sem estoque
+
+```text
+Saldo disponível <= 0
+```
+
+O item é considerado sem disponibilidade para atendimento.
+
+### Estoque parcial
+
+```text
+Saldo disponível > 0
+e
+Saldo disponível < quantidade solicitada
+```
+
+O item possui atendimento parcial.
+
+### Estoque disponível
+
+```text
+Saldo disponível >= quantidade solicitada
+```
+
+O item possui estoque suficiente para atendimento completo.
+
+## Status do Documento
+
+Após analisar todos os itens, o WMS define automaticamente o status do Documento de Saída.
+
+| Situação | Status do Documento |
+| :-- | :-- |
+| Pelo menos um item sem estoque | `AGUARDANDO_ESTOQUE` |
+| Nenhum item sem estoque, mas pelo menos um item com saldo parcial | `PARCIAL_ESTOQUE` |
+| Todos os itens possuem saldo suficiente | `PRONTO_PARA_ROMANEIO` |
+
+A condição de item sem estoque possui prioridade sobre a condição de estoque parcial.
+
+Exemplo:
+
+```text
+Item A: estoque completo
+Item B: estoque parcial
+Item C: sem estoque
+
+Resultado:
+AGUARDANDO_ESTOQUE
+```
+
+<Note>
+  A análise realizada nesta API verifica a disponibilidade existente no momento da integração. Ela não realiza a reserva do estoque. A reserva ocorre posteriormente dentro do fluxo operacional de expedição.
+</Note>
+
+## Reprocessamento
+
+Enquanto o Documento de Saída ainda não estiver associado a um romaneio, ele poderá ser reenviado através da integração.
+
+Neste caso, o WMS:
+
+1. localiza o documento existente;
+2. atualiza seus dados principais;
+3. remove os itens anteriores;
+4. recria os itens com base no novo payload;
+5. recalcula valores e pesos;
+6. realiza novamente a análise de estoque;
+7. redefine o status do documento.
+
+O retorno apresentará:
+
+```json
+{
+  "acao": "update"
+}
+```
+
+Caso o documento já esteja vinculado a um romaneio de saída, o reprocessamento será rejeitado com status `409`.
+
+## Exemplo
 
 <RequestExample>
 
 ```json body
 [
-    {
-      "documento": {
-        "codigo": "NF654321",
-        "tipo": "nfe",
-        "serie": "1",
-        "chave_acesso": "35260312345678000199550010000043211000043210",
-        "data_emissao": "2026-03-30",
-        "origem_id": "ERP-NFE-654321"
-      },
-      "emitente": {
-        "codigo": "EMIT0002",
-        "nome": "INDÚSTRIA ALFA LTDA",
-        "documento": "33.444.555/0001-66",
-        "tipo_pessoa": "juridica",
-        "endereco": "Rua das Indústrias",
-        "numero": "500",
-        "bairro": "Distrito Industrial",
-        "cidade": "Jundiaí",
-        "uf": "SP",
-        "cep": "13200-000"
-      },
-      "destinatario": {
-        "codigo": "DEST0002",
-        "nome": "DISTRIBUIDORA BETA LTDA",
-        "documento": "44.555.666/0001-77",
-        "tipo_pessoa": "juridica",
-        "endereco": "Rodovia Anhanguera",
-        "numero": "KM 70",
-        "bairro": "Zona Rural",
-        "cidade": "Limeira",
-        "uf": "SP",
-        "cep": "13480-000"
-      },
-      "itens": [
-        {
-          "sequencial": 1,
-          "produto": {
-            "codigo": "PROD010",
-            "descricao": "Produto 010",
-            "tipo": "S",
-            "unidade_medida": "UN",
-            "peso_bruto": 12.5,
-            "peso_liquido": 12,
-            "peso_cubado": 0.08
-          },
-          "lote": "LT20260301",
-          "data_validade": "2027-03-01",
-          "quantidade": 30,
-          "valor_unitario": 22.9
+  {
+    "documento": {
+      "codigo": "NF654321",
+      "tipo": "nfe",
+      "serie": "1",
+      "chave_acesso": "35260312345678000199550010000043211000043210",
+      "data_emissao": "2026-03-30",
+      "origem_id": "ERP-NFE-654321"
+    },
+    "emitente": {
+      "codigo": "EMIT0002",
+      "nome": "INDÚSTRIA ALFA LTDA",
+      "documento": "33.444.555/0001-66",
+      "tipo_pessoa": "juridica",
+      "endereco": "Rua das Indústrias",
+      "numero": "500",
+      "bairro": "Distrito Industrial",
+      "cidade": "Jundiaí",
+      "uf": "SP",
+      "cep": "13200-000"
+    },
+    "destinatario": {
+      "codigo": "DEST0002",
+      "nome": "DISTRIBUIDORA BETA LTDA",
+      "documento": "44.555.666/0001-77",
+      "tipo_pessoa": "juridica",
+      "endereco": "Rodovia Anhanguera",
+      "numero": "KM 70",
+      "bairro": "Zona Rural",
+      "cidade": "Limeira",
+      "uf": "SP",
+      "cep": "13480-000"
+    },
+    "itens": [
+      {
+        "sequencial": 1,
+        "produto": {
+          "codigo": "PROD010",
+          "descricao": "Produto 010",
+          "tipo": "S",
+          "unidade_medida": "UN",
+          "peso_bruto": 12.5,
+          "peso_liquido": 12,
+          "peso_cubado": 0.08
         },
-        {
-          "sequencial": 2,
-          "produto": {
-            "codigo": "PROD011",
-            "descricao": "Produto 011",
-            "tipo": "S",
-            "unidade_medida": "CX",
-            "peso_bruto": 20,
-            "peso_liquido": 19,
-            "peso_cubado": 0.12
-          },
-          "lote": "LT20260302",
-          "data_validade": "2026-11-15",
-          "quantidade": 10,
-          "peso_bruto": 200,
-          "peso_liquido": 190,
-          "peso_cubado": 1.2,
-          "valor_total": 890
-        }
-      ]
-    }
-  ]
+        "lote": "LT20260301",
+        "data_validade": "2027-03-01",
+        "quantidade": 30,
+        "valor_unitario": 22.9
+      },
+      {
+        "sequencial": 2,
+        "produto": {
+          "codigo": "PROD011",
+          "descricao": "Produto 011",
+          "tipo": "S",
+          "unidade_medida": "CX",
+          "peso_bruto": 20,
+          "peso_liquido": 19,
+          "peso_cubado": 0.12
+        },
+        "lote": "LT20260302",
+        "data_validade": "2026-11-15",
+        "quantidade": 10,
+        "peso_bruto": 200,
+        "peso_liquido": 190,
+        "peso_cubado": 1.2,
+        "valor_total": 890
+      }
+    ]
+  }
+]
 ```
 
 </RequestExample>
+
+### Exemplo de resposta
+
+O exemplo abaixo considera que pelo menos um dos itens não possui saldo suficiente para atendimento.
 
 <ResponseExample>
 
 ```json 200
 {
-	"ok": true,
-	"status": 200,
-	"message": "Integração de documentos de saída processada",
-	"resultado": [
-		{
-			"ok": true,
-			"acao": "insert",
-			"tipo": "nfe",
-			"indice": 0,
-			"status": 200,
-			"status_id": 2,
-			"emitente_id": "ID EMITENTE",
-			"valor_total": 1577,
-			"documento_id": "ID DOCUMENTO",
-			"status_codigo": "AGUARDANDO_ESTOQUE",
-			"destinatario_id": "ID DESTINATARIO",
-			"documento_codigo": "NF654321",
-			"peso_bruto_total": 575,
-			"itens_processados": 2,
-			"peso_cubado_total": 3.6,
-			"peso_liquido_total": 550
-		}
-	],
-	"processados": 1
+  "ok": true,
+  "status": 200,
+  "message": "Integração de documentos de saída processada",
+  "resultado": [
+    {
+      "indice": 0,
+      "ok": true,
+      "status": 200,
+      "acao": "insert",
+      "documento_id": "ID DOCUMENTO",
+      "documento_codigo": "NF654321",
+      "tipo": "nfe",
+      "emitente_id": "ID EMITENTE",
+      "destinatario_id": "ID DESTINATARIO",
+      "itens_processados": 2,
+      "valor_total": 1577,
+      "peso_bruto_total": 575,
+      "peso_liquido_total": 550,
+      "peso_cubado_total": 3.6,
+      "status_id": 2,
+      "status_codigo": "AGUARDANDO_ESTOQUE"
+    }
+  ],
+  "processados": 1
 }
 ```
 
 </ResponseExample>
 
+## Exemplo de Pedido
+
+Para pedidos, `serie` e `chave_acesso` não devem ser enviados.
+
+<RequestExample>
+
+```json body
+[
+  {
+    "documento": {
+      "codigo": "PED10001",
+      "tipo": "pedido",
+      "data_emissao": "2026-09-29",
+      "origem_id": "4500010001"
+    },
+    "emitente": {
+      "codigo": "EMIT0001",
+      "nome": "EMPRESA EMBARCADORA LTDA",
+      "documento": "55.444.333/0001-22",
+      "tipo_pessoa": "juridica"
+    },
+    "destinatario": {
+      "codigo": "DEST0001",
+      "nome": "CLIENTE EXEMPLO LTDA",
+      "documento": "40.876.123/0001-52",
+      "tipo_pessoa": "juridica"
+    },
+    "itens": [
+      {
+        "sequencial": 1,
+        "produto": {
+          "codigo": "PROD001",
+          "descricao": "Produto 001",
+          "tipo": "S",
+          "unidade_medida": "UN",
+          "peso_bruto": 1.5,
+          "peso_liquido": 1.4,
+          "peso_cubado": 0.01
+        },
+        "quantidade": 100,
+        "valor_unitario": 10
+      }
+    ]
+  }
+]
+```
+
+</RequestExample>
+
+Neste exemplo, como o pedido não informa lote, a análise de disponibilidade considera o saldo total do produto `PROD001`.
+
+## Processamento em lote
+
+A API permite o envio de diversos Documentos de Saída em uma mesma requisição.
+
+Cada posição do array é processada individualmente.
+
+Exemplo conceitual:
+
+```json
+[
+  {
+    "documento": {
+      "codigo": "PED1001",
+      "tipo": "pedido",
+      "data_emissao": "2026-09-29"
+    },
+    "emitente": {
+      "nome": "EMPRESA EMBARCADORA"
+    },
+    "destinatario": {
+      "nome": "CLIENTE 01"
+    },
+    "itens": [
+      {
+        "produto": {
+          "codigo": "PROD001",
+          "descricao": "Produto 001"
+        },
+        "quantidade": 10
+      }
+    ]
+  },
+  {
+    "documento": {
+      "codigo": "PED1002",
+      "tipo": "pedido",
+      "data_emissao": "2026-09-29"
+    },
+    "emitente": {
+      "nome": "EMPRESA EMBARCADORA"
+    },
+    "destinatario": {
+      "nome": "CLIENTE 02"
+    },
+    "itens": [
+      {
+        "produto": {
+          "codigo": "PROD002",
+          "descricao": "Produto 002"
+        },
+        "quantidade": 20
+      }
+    ]
+  }
+]
+```
+
+O status geral representa o processamento do lote.
+
+Por isso, uma requisição pode retornar HTTP `200` mesmo quando um Documento de Saída individual apresentar erro.
+
+O sistema integrador deve avaliar:
+
+```text
+resultado[].ok
+resultado[].status
+```
+
+para identificar o resultado individual de cada Documento de Saída.
+
+Exemplo:
+
+```json
+{
+  "ok": true,
+  "status": 200,
+  "message": "Integração de documentos de saída processada",
+  "resultado": [
+    {
+      "indice": 0,
+      "ok": true,
+      "status": 200,
+      "acao": "insert",
+      "status_codigo": "PRONTO_PARA_ROMANEIO"
+    },
+    {
+      "indice": 1,
+      "ok": false,
+      "status": 400,
+      "message": "Quantidade inválida para o produto PROD002"
+    }
+  ],
+  "processados": 2
+}
+```
+
 ## Erros comuns
 
-| **Código** | **Mensagem** | **Causa Provável** |
+| Código | Mensagem | Causa Provável |
 | :-- | :-- | :-- |
-| 400 | Campos obrigatórios ausentes | Campo obrigatório não enviado no payload, como <br />`documento.codigo`, `documento.tipo`, `documento.data_emissao`, <br />`emitente.nome`, `destinatario.nome` ou itens sem `produto.codigo` e `quantidade` |
-| 400 | Tipo de documento inválido | Valor de `documento.tipo` diferente dos aceitos pela API. Para saída: `pedido` ou `nfe` |
-| 401 | Sessão inválida | Token Bearer ausente, inválido, expirado ou não reconhecido. |
-| 409 | Documento já vinculado a romaneio <br />e não pode ser reprocessado | O documento já entrou no fluxo operacional e possui vínculo em `romaneios_documentos_saida`, <br />impedindo atualização pela integração |
-| 500 | Erro interno ao processar entrada | Falha inesperada no processamento da RPC, normalmente causada por inconsistência de dados, <br />relacionamento inválido ou estrutura incompleta no banco |
-|  |  |  |
+| 400 | `p_payload deve ser um array JSON` | O corpo recebido pela integração não está no formato de array esperado |
+| 400 | `p_payload não pode ser vazio` | Foi enviado um array sem documentos |
+| 400 | `Campo itens deve ser um array` | A propriedade `itens` não foi enviada como array |
+| 400 | `Documento sem itens` | O Documento de Saída foi enviado sem nenhum item |
+| 400 | `documento.codigo é obrigatório` | Código ou número do documento não informado |
+| 400 | `documento.tipo é obrigatório` | Tipo do documento não informado |
+| 400 | `documento.tipo inválido. Valores aceitos: pedido, nfe` | Tipo diferente de `pedido` ou `nfe` |
+| 400 | `documento.data_emissao é obrigatório` | Data de emissão não informada |
+| 400 | `documento.serie é obrigatória para NF-e` | Documento do tipo `nfe` enviado sem série |
+| 400 | `documento.chave_acesso é obrigatória para NF-e` | Documento do tipo `nfe` enviado sem chave de acesso |
+| 400 | `documento.chave_acesso deve conter 44 dígitos` | Chave de acesso da NF-e possui tamanho inválido |
+| 400 | `pedido não aceita série/chave_acesso` | Documento do tipo `pedido` foi enviado com série ou chave de acesso |
+| 400 | `emitente.nome é obrigatório` | Nome ou razão social do emitente não informado |
+| 400 | `emitente.tipo_pessoa inválido` | Valor diferente de `fisica` ou `juridica` |
+| 400 | `destinatario.nome é obrigatório` | Nome ou razão social do destinatário não informado |
+| 400 | `destinatario.tipo_pessoa inválido` | Valor diferente de `fisica` ou `juridica` |
+| 400 | `Item sem produto.codigo` | Um item foi enviado sem o código do produto |
+| 400 | `Item sem produto.descricao` | Um item foi enviado sem a descrição do produto |
+| 400 | `produto.tipo inválido` | Tipo do produto diferente de `S` ou `L` |
+| 400 | `lote é obrigatório para itens de NF-e` | Item de documento `nfe` enviado sem lote |
+| 400 | `Quantidade inválida para o produto` | Quantidade ausente, inválida ou menor/igual a zero |
+| 401 | `Sessão inválida` | Token Bearer ausente, inválido, expirado ou não reconhecido |
+| 401 | `Não foi possível determinar a empresa` | Usuário autenticado não está corretamente associado a uma empresa |
+| 409 | `Documento já vinculado a romaneio e não pode ser reprocessado` | O documento já entrou no fluxo operacional de expedição e não pode mais ser atualizado por esta API |
+
+## Status retornados
+
+| Status | Descrição |
+| :-- | :-- |
+| `AGUARDANDO_ESTOQUE` | Pelo menos um item não possui saldo disponível |
+| `PARCIAL_ESTOQUE` | Não existem itens totalmente sem saldo, mas pelo menos um possui saldo inferior à quantidade solicitada |
+| `PRONTO_PARA_ROMANEIO` | Todos os itens possuem saldo disponível suficiente |
 
 <Note>
-  - Se o produto, emitente ou destinatário ainda não existir, será criado automaticamente vinculado à empresa.
-  - A função respeita as **RLS policies** para garantir que o usuário só altere dados da empresa à qual está vinculado.
+  - Se o produto, emitente ou destinatário ainda não existir, será criado automaticamente e vinculado à empresa do usuário autenticado.
+  - O Documento de Saída pode ser atualizado através da integração enquanto ainda não estiver vinculado a um romaneio.
+  - Após o vínculo com um romaneio, o documento não poderá mais ser reprocessado por esta API.
+  - Para documentos do tipo `nfe`, série, chave de acesso e lote dos itens são obrigatórios.
+  - Para documentos do tipo `pedido`, série e chave de acesso não devem ser enviadas.
+  - Quando o peso total do item não for informado, o WMS calcula o peso através da quantidade multiplicada pelo peso unitário cadastrado no produto.
+  - Quando `valor_total` não for informado, mas `valor_unitario` estiver presente, o WMS calcula automaticamente o valor do item.
+  - A análise de estoque não realiza reserva de saldo.
+  - O processamento de cada documento do lote é isolado. Uma falha em um documento não impede o processamento dos demais.
 </Note>
