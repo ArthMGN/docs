@@ -12,6 +12,7 @@ Seu objetivo é permitir a integração padronizada de documentos de entrada, ce
 - validação dos dados recebidos;
 - identificação da empresa através do usuário autenticado;
 - criação e atualização de emitentes e destinatários;
+- criação e atualização de grupos e subgrupos de produtos;
 - criação e atualização de produtos;
 - cálculo de valores e pesos;
 - criação ou atualização do Documento de Entrada;
@@ -105,6 +106,7 @@ Cada Documento de Entrada deve possuir pelo menos um item.
 | `sequencial` | integer | Não | Sequência do item dentro do documento. Quando não informado, o WMS atribui automaticamente |
 | `produto` | json | Sim | Dados do produto |
 | `lote` | string | Não | Lote do produto |
+| `data_fabricacao` | string | Não | Data de fabricação no formato `yyyy-mm-dd` |
 | `data_validade` | string | Não | Data de validade no formato `yyyy-mm-dd` |
 | `quantidade` | number | Sim | Quantidade do produto. Deve ser maior que zero |
 | `valor_unitario` | number | Não | Valor unitário utilizado para cálculo do valor total do item |
@@ -112,6 +114,14 @@ Cada Documento de Entrada deve possuir pelo menos um item.
 | `peso_bruto` | number | Não | Peso bruto total do item |
 | `peso_liquido` | number | Não | Peso líquido total do item |
 | `peso_cubado` | number | Não | Peso cubado total do item |
+
+`data_fabricacao` é opcional. Quando informada, deve utilizar o padrão ISO `yyyy-mm-dd`.
+
+Exemplo válido:
+
+```text
+2026-10-01
+```
 
 Quando `valor_total` não for informado e `valor_unitario` estiver presente, o WMS calcula:
 
@@ -135,6 +145,8 @@ quantidade × peso unitário do produto
 | `descricao` | string | Sim | Descrição do produto |
 | `tipo` | string | Não | `S` ou `L`. Quando não informado, será utilizado `S` |
 | `unidade_medida` | string | Não | Unidade padrão do produto, como `UN`, `CX`, `LT`, `BD` ou `BB` |
+| `grupo` | json | Não | Grupo ao qual o produto pertence |
+| `subgrupo` | json | Não | Subgrupo ao qual o produto pertence |
 | `peso_bruto` | number | Não | Peso bruto unitário do produto |
 | `peso_liquido` | number | Não | Peso líquido unitário do produto |
 | `peso_cubado` | number | Não | Peso cubado unitário do produto |
@@ -143,7 +155,65 @@ O produto é localizado através do seu `codigo` dentro da empresa autenticada.
 
 Caso o produto ainda não exista, será criado automaticamente.
 
-Caso já exista, as informações recebidas poderão atualizar descrição, tipo, unidade de medida e pesos cadastrados.
+Caso já exista, as informações recebidas poderão atualizar descrição, tipo, unidade de medida, grupo, subgrupo e pesos cadastrados.
+
+Quando `grupo` ou `subgrupo` não forem enviados, os vínculos existentes do produto não serão removidos.
+
+### Grupo do Produto
+
+O objeto `produto.grupo` é opcional.
+
+Quando informado, os campos `codigo` e `descricao` tornam-se obrigatórios.
+
+| Nome | Tipo | Obrigatório | Descrição |
+| :-- | :-- | :-: | :-- |
+| `codigo` | string | Condicional | Código do grupo no sistema de origem. Obrigatório quando o objeto `grupo` for enviado |
+| `descricao` | string | Condicional | Descrição do grupo. Obrigatória quando o objeto `grupo` for enviado |
+
+Exemplo:
+
+```json
+{
+  "grupo": {
+    "codigo": "GRP001",
+    "descricao": "BEBIDAS"
+  }
+}
+```
+
+O WMS procura o grupo através da combinação entre empresa autenticada e `codigo`.
+
+Caso o grupo não exista, ele será criado automaticamente.
+
+Caso já exista, sua descrição poderá ser atualizada com a informação recebida na integração.
+
+### Subgrupo do Produto
+
+O objeto `produto.subgrupo` é opcional.
+
+Quando informado, os campos `codigo` e `descricao` tornam-se obrigatórios.
+
+| Nome | Tipo | Obrigatório | Descrição |
+| :-- | :-- | :-: | :-- |
+| `codigo` | string | Condicional | Código do subgrupo no sistema de origem. Obrigatório quando o objeto `subgrupo` for enviado |
+| `descricao` | string | Condicional | Descrição do subgrupo. Obrigatória quando o objeto `subgrupo` for enviado |
+
+Exemplo:
+
+```json
+{
+  "subgrupo": {
+    "codigo": "SUB001",
+    "descricao": "AGUA MINERAL"
+  }
+}
+```
+
+O WMS procura o subgrupo através da combinação entre empresa autenticada e `codigo`.
+
+Caso o subgrupo não exista, ele será criado automaticamente.
+
+Caso já exista, sua descrição poderá ser atualizada com a informação recebida na integração.
 
 ## Cálculo dos Totais
 
@@ -214,7 +284,7 @@ Caso o documento já esteja vinculado a um romaneio de entrada, o reprocessament
       "codigo": "NF547654",
       "tipo": "nfe",
       "serie": "1",
-      "data_emissao": "2026-02-02"
+      "data_emissao": "2026-10-19"
     },
     "emitente": {
       "codigo": "EMIT0001",
@@ -248,12 +318,21 @@ Caso o documento já esteja vinculado a um romaneio de entrada, o reprocessament
           "descricao": "Produto COMPANHIA",
           "tipo": "S",
           "unidade_medida": "UN",
+          "grupo": {
+            "codigo": "GRP001",
+            "descricao": "BEBIDAS"
+          },
+          "subgrupo": {
+            "codigo": "SUB001",
+            "descricao": "AGUA MINERAL"
+          },
           "peso_bruto": 12.5,
           "peso_liquido": 12,
           "peso_cubado": 0.08
         },
-        "lote": "CL20260202",
-        "data_validade": "2026-06-20",
+        "lote": "CL20261001",
+        "data_fabricacao": "2026-10-01",
+        "data_validade": "2027-10-01",
         "quantidade": 200,
         "valor_unitario": 5.30
       },
@@ -264,12 +343,21 @@ Caso o documento já esteja vinculado a um romaneio de entrada, o reprocessament
           "descricao": "Produto COMPANHIA 02",
           "tipo": "S",
           "unidade_medida": "CX",
+          "grupo": {
+            "codigo": "GRP002",
+            "descricao": "ALIMENTOS"
+          },
+          "subgrupo": {
+            "codigo": "SUB002",
+            "descricao": "ALIMENTOS SECOS"
+          },
           "peso_bruto": 8,
           "peso_liquido": 7.5,
           "peso_cubado": 0.05
         },
-        "lote": "CL20260203",
-        "data_validade": "2026-07-15",
+        "lote": "CL20261002",
+        "data_fabricacao": "2026-10-02",
+        "data_validade": "2027-10-02",
         "quantidade": 50,
         "peso_bruto": 400,
         "peso_liquido": 375,
@@ -290,24 +378,27 @@ Caso o documento já esteja vinculado a um romaneio de entrada, o reprocessament
   "ok": true,
   "status": 200,
   "message": "Integração de documentos de entrada processada",
-  "resultado": [
-    {
-      "indice": 0,
-      "ok": true,
-      "status": 200,
-      "acao": "insert",
-      "documento_id": "ID DOCUMENTO",
-      "documento_codigo": "NF547654",
-      "emitente_id": "ID EMITENTE",
-      "destinatario_id": "ID DESTINATARIO",
-      "itens_processados": 2,
-      "valor_total": 1485,
-      "peso_bruto_total": 2900,
-      "peso_liquido_total": 2775,
-      "peso_cubado_total": 18.5
-    }
-  ],
-  "processados": 1
+  "request_id": "d4b25285-902e-4194-b849-6844f02aed51",
+  "data": {
+    "processados": 1,
+    "resultado": [
+      {
+        "indice": 0,
+        "ok": true,
+        "status": 200,
+        "acao": "insert",
+        "documento_id": "ID DOCUMENTO",
+        "documento_codigo": "NF547654",
+        "emitente_id": "ID EMITENTE",
+        "destinatario_id": "ID DESTINATARIO",
+        "itens_processados": 2,
+        "valor_total": 1485,
+        "peso_bruto_total": 2900,
+        "peso_liquido_total": 2775,
+        "peso_cubado_total": 18.5
+      }
+    ]
+  }
 }
 ```
 
@@ -319,94 +410,99 @@ A API permite o envio de diversos Documentos de Entrada em uma mesma requisiçã
 
 Cada posição do array é processada individualmente.
 
-Exemplo conceitual:
+O código HTTP da resposta representa o **resultado consolidado do lote**, enquanto `data.resultado[]` apresenta o resultado individual de cada documento.
 
-```json
-[
-  {
-    "documento": {
-      "codigo": "NF1001",
-      "tipo": "nfe",
-      "data_emissao": "2026-09-29"
-    },
-    "emitente": {
-      "nome": "FORNECEDOR 01"
-    },
-    "destinatario": {
-      "nome": "CENTRO DE DISTRIBUIÇÃO"
-    },
-    "itens": [
-      {
-        "produto": {
-          "codigo": "PROD001",
-          "descricao": "Produto 001"
-        },
-        "quantidade": 10
-      }
-    ]
-  },
-  {
-    "documento": {
-      "codigo": "NF1002",
-      "tipo": "nfe",
-      "data_emissao": "2026-09-29"
-    },
-    "emitente": {
-      "nome": "FORNECEDOR 02"
-    },
-    "destinatario": {
-      "nome": "CENTRO DE DISTRIBUIÇÃO"
-    },
-    "itens": [
-      {
-        "produto": {
-          "codigo": "PROD002",
-          "descricao": "Produto 002"
-        },
-        "quantidade": 20
-      }
-    ]
-  }
-]
-```
+### Lote totalmente processado
 
-O status geral representa o processamento do lote.
-
-Por isso, a requisição pode retornar HTTP `200` mesmo quando um documento individual apresentar erro.
-
-O sistema integrador deve avaliar:
+Quando todos os documentos forem processados com sucesso:
 
 ```text
-resultado[].ok
-resultado[].status
+HTTP 200
 ```
 
-para identificar o resultado individual de cada Documento de Entrada.
+### Erro em um único documento
+
+Quando apenas um documento for enviado e ele apresentar erro, a API retornará o código correspondente ao erro.
+
+Exemplos:
+
+```text
+HTTP 400
+HTTP 409
+HTTP 422
+```
+
+### Todos os documentos com erro
+
+Quando todos os documentos falharem com o mesmo status, esse status será utilizado como resposta HTTP.
+
+Exemplo:
+
+```text
+2 documentos com status 400
+→ HTTP 400
+```
+
+Quando os documentos apresentarem erros com status diferentes, o lote será consolidado como:
+
+```text
+HTTP 422
+```
+
+### Processamento parcial
+
+Quando parte do lote for processada com sucesso e parte apresentar erro:
+
+```text
+HTTP 422 Unprocessable Entity
+```
+
+Os documentos processados com sucesso não são descartados.
+
+O integrador deve consultar `data.resultado[]` para identificar individualmente quais documentos foram processados e quais apresentaram erro.
 
 Exemplo:
 
 ```json
 {
-  "ok": true,
-  "status": 200,
-  "message": "Integração de documentos de entrada processada",
-  "resultado": [
-    {
-      "indice": 0,
-      "ok": true,
-      "status": 200,
-      "acao": "insert"
-    },
-    {
-      "indice": 1,
-      "ok": false,
-      "status": 400,
-      "message": "Quantidade inválida para o produto PROD002"
-    }
-  ],
-  "processados": 2
+  "ok": false,
+  "status": 422,
+  "message": "Lote processado com pendências",
+  "request_id": "ce897a68-7f4a-46fa-ba4c-a4bef4bb8536",
+  "data": {
+    "processados": 2,
+    "resultado": [
+      {
+        "indice": 0,
+        "ok": true,
+        "status": 200,
+        "acao": "insert"
+      },
+      {
+        "indice": 1,
+        "ok": false,
+        "status": 400,
+        "message": "Quantidade inválida para o produto PROD002"
+      }
+    ]
+  }
 }
 ```
+
+<Note>
+  Em caso de processamento parcial, o integrador deve considerar que os registros com `ok: true` já foram processados pelo WMS. Antes de reenviar o lote, recomenda-se avaliar individualmente os registros retornados em `data.resultado[]`.
+</Note>
+
+## Status HTTP
+
+| Código | Significado |
+| :-- | :-- |
+| `200` | Requisição processada com sucesso |
+| `400` | Payload inválido ou regra básica de validação não atendida |
+| `401` | Token ausente, inválido ou usuário sem empresa associada |
+| `409` | Conflito com o estado atual do documento, como documento já vinculado a romaneio |
+| `422` | Erro de processamento/regra de negócio ou lote processado parcialmente |
+| `500` | Erro técnico inesperado ou indisponibilidade durante o processamento |
 
 ## Erros comuns
 
@@ -427,6 +523,11 @@ Exemplo:
 | 400 | `Item sem produto.codigo` | Um item foi enviado sem o código do produto |
 | 400 | `Item sem produto.descricao` | Um item foi enviado sem a descrição do produto |
 | 400 | `produto.tipo inválido` | Tipo do produto diferente de `S` ou `L` |
+| 400 | `produto.grupo.codigo é obrigatório` | Objeto `grupo` enviado sem código |
+| 400 | `produto.grupo.descricao é obrigatória` | Objeto `grupo` enviado sem descrição |
+| 400 | `produto.subgrupo.codigo é obrigatório` | Objeto `subgrupo` enviado sem código |
+| 400 | `produto.subgrupo.descricao é obrigatória` | Objeto `subgrupo` enviado sem descrição |
+| 400 | `Invalid ISO date` | `data_fabricacao` enviada em formato diferente de `yyyy-mm-dd` |
 | 400 | `Quantidade inválida para o produto` | Quantidade ausente, inválida ou menor/igual a zero |
 | 401 | `Sessão inválida` | Token Bearer ausente, inválido, expirado ou não reconhecido |
 | 401 | `Não foi possível determinar a empresa` | Usuário autenticado não está corretamente associado a uma empresa |
@@ -434,10 +535,16 @@ Exemplo:
 | 500 | `Tabela status_documentos_entrada sem registros válidos` | Não existem registros disponíveis para inicialização do status do Documento de Entrada |
 
 <Note>
-  - Se o produto, emitente ou destinatário ainda não existir, será criado automaticamente e vinculado à empresa do usuário autenticado.
+  - Se o produto, grupo, subgrupo, emitente ou destinatário ainda não existir, será criado automaticamente e vinculado à empresa do usuário autenticado.
+  - `grupo`, `subgrupo` e `data_fabricacao` são opcionais, mantendo compatibilidade com integrações anteriores.
+  - Quando `grupo` for informado, `grupo.codigo` e `grupo.descricao` devem ser enviados.
+  - Quando `subgrupo` for informado, `subgrupo.codigo` e `subgrupo.descricao` devem ser enviados.
+  - Quando grupo ou subgrupo não forem enviados para um produto já existente, os vínculos atuais não serão removidos.
+  - `data_fabricacao`, quando informada, deve utilizar o formato `yyyy-mm-dd`.
   - O Documento de Entrada pode ser atualizado através da integração enquanto ainda não estiver vinculado a um romaneio.
   - Após o vínculo com um romaneio, o documento não poderá mais ser reprocessado por esta API.
   - Quando o peso total do item não for informado, o WMS calcula o peso através da quantidade multiplicada pelo peso unitário cadastrado no produto.
   - Quando `valor_total` não for informado, mas `valor_unitario` estiver presente, o WMS calcula automaticamente o valor do item.
   - O processamento de cada documento do lote é isolado. Uma falha em um documento não impede o processamento dos demais.
+  - O HTTP da resposta representa o resultado consolidado do lote; o resultado individual de cada documento está disponível em `data.resultado[]`.
 </Note>

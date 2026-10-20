@@ -440,7 +440,7 @@ Caso o documento já esteja vinculado a um romaneio de saída, o reprocessamento
 
 ### Exemplo de resposta
 
-O exemplo abaixo considera que pelo menos um dos itens não possui saldo suficiente para atendimento.
+O exemplo abaixo considera que o Documento de Saída foi processado com sucesso.
 
 <ResponseExample>
 
@@ -449,82 +449,34 @@ O exemplo abaixo considera que pelo menos um dos itens não possui saldo suficie
   "ok": true,
   "status": 200,
   "message": "Integração de documentos de saída processada",
-  "resultado": [
-    {
-      "indice": 0,
-      "ok": true,
-      "status": 200,
-      "acao": "insert",
-      "documento_id": "ID DOCUMENTO",
-      "documento_codigo": "NF654321",
-      "tipo": "nfe",
-      "emitente_id": "ID EMITENTE",
-      "destinatario_id": "ID DESTINATARIO",
-      "itens_processados": 2,
-      "valor_total": 1577,
-      "peso_bruto_total": 575,
-      "peso_liquido_total": 550,
-      "peso_cubado_total": 3.6,
-      "status_id": 2,
-      "status_codigo": "AGUARDANDO_ESTOQUE"
-    }
-  ],
-  "processados": 1
+  "request_id": "d4b25285-902e-4194-b849-6844f02aed51",
+  "data": {
+    "processados": 1,
+    "resultado": [
+      {
+        "indice": 0,
+        "ok": true,
+        "status": 200,
+        "acao": "insert",
+        "documento_id": "ID DOCUMENTO",
+        "documento_codigo": "NF654321",
+        "tipo": "nfe",
+        "emitente_id": "ID EMITENTE",
+        "destinatario_id": "ID DESTINATARIO",
+        "itens_processados": 2,
+        "valor_total": 1577,
+        "peso_bruto_total": 575,
+        "peso_liquido_total": 550,
+        "peso_cubado_total": 3.6,
+        "status_id": 2,
+        "status_codigo": "AGUARDANDO_ESTOQUE"
+      }
+    ]
+  }
 }
 ```
 
 </ResponseExample>
-
-## Exemplo de Pedido
-
-Para pedidos, `serie` e `chave_acesso` não devem ser enviados.
-
-<RequestExample>
-
-```json body
-[
-  {
-    "documento": {
-      "codigo": "PED10001",
-      "tipo": "pedido",
-      "data_emissao": "2026-09-29",
-      "origem_id": "4500010001"
-    },
-    "emitente": {
-      "codigo": "EMIT0001",
-      "nome": "EMPRESA EMBARCADORA LTDA",
-      "documento": "55.444.333/0001-22",
-      "tipo_pessoa": "juridica"
-    },
-    "destinatario": {
-      "codigo": "DEST0001",
-      "nome": "CLIENTE EXEMPLO LTDA",
-      "documento": "40.876.123/0001-52",
-      "tipo_pessoa": "juridica"
-    },
-    "itens": [
-      {
-        "sequencial": 1,
-        "produto": {
-          "codigo": "PROD001",
-          "descricao": "Produto 001",
-          "tipo": "S",
-          "unidade_medida": "UN",
-          "peso_bruto": 1.5,
-          "peso_liquido": 1.4,
-          "peso_cubado": 0.01
-        },
-        "quantidade": 100,
-        "valor_unitario": 10
-      }
-    ]
-  }
-]
-```
-
-</RequestExample>
-
-Neste exemplo, como o pedido não informa lote, a análise de disponibilidade considera o saldo total do produto `PROD001`.
 
 ## Processamento em lote
 
@@ -532,69 +484,15 @@ A API permite o envio de diversos Documentos de Saída em uma mesma requisição
 
 Cada posição do array é processada individualmente.
 
-Exemplo conceitual:
+O código HTTP retornado pela API representa o **resultado consolidado do lote**, enquanto `data.resultado[]` apresenta o resultado individual de cada Documento de Saída.
 
-```json
-[
-  {
-    "documento": {
-      "codigo": "PED1001",
-      "tipo": "pedido",
-      "data_emissao": "2026-09-29"
-    },
-    "emitente": {
-      "nome": "EMPRESA EMBARCADORA"
-    },
-    "destinatario": {
-      "nome": "CLIENTE 01"
-    },
-    "itens": [
-      {
-        "produto": {
-          "codigo": "PROD001",
-          "descricao": "Produto 001"
-        },
-        "quantidade": 10
-      }
-    ]
-  },
-  {
-    "documento": {
-      "codigo": "PED1002",
-      "tipo": "pedido",
-      "data_emissao": "2026-09-29"
-    },
-    "emitente": {
-      "nome": "EMPRESA EMBARCADORA"
-    },
-    "destinatario": {
-      "nome": "CLIENTE 02"
-    },
-    "itens": [
-      {
-        "produto": {
-          "codigo": "PROD002",
-          "descricao": "Produto 002"
-        },
-        "quantidade": 20
-      }
-    ]
-  }
-]
-```
+### Sucesso total
 
-O status geral representa o processamento do lote.
-
-Por isso, uma requisição pode retornar HTTP `200` mesmo quando um Documento de Saída individual apresentar erro.
-
-O sistema integrador deve avaliar:
+Quando todos os documentos forem processados com sucesso:
 
 ```text
-resultado[].ok
-resultado[].status
+HTTP 200
 ```
-
-para identificar o resultado individual de cada Documento de Saída.
 
 Exemplo:
 
@@ -603,24 +501,146 @@ Exemplo:
   "ok": true,
   "status": 200,
   "message": "Integração de documentos de saída processada",
-  "resultado": [
-    {
-      "indice": 0,
-      "ok": true,
-      "status": 200,
-      "acao": "insert",
-      "status_codigo": "PRONTO_PARA_ROMANEIO"
-    },
-    {
-      "indice": 1,
-      "ok": false,
-      "status": 400,
-      "message": "Quantidade inválida para o produto PROD002"
-    }
-  ],
-  "processados": 2
+  "request_id": "7db2d38e-7d3e-42ab-a5fb-f551b56e96a4",
+  "data": {
+    "processados": 2,
+    "resultado": [
+      {
+        "indice": 0,
+        "ok": true,
+        "status": 200,
+        "acao": "insert",
+        "status_codigo": "PRONTO_PARA_ROMANEIO"
+      },
+      {
+        "indice": 1,
+        "ok": true,
+        "status": 200,
+        "acao": "insert",
+        "status_codigo": "AGUARDANDO_ESTOQUE"
+      }
+    ]
+  }
 }
 ```
+
+### Erro em um único documento
+
+Quando somente um documento for processado e ele apresentar erro, a API retornará o código HTTP correspondente ao erro.
+
+Exemplos:
+
+```text
+400 - Erro de validação
+409 - Conflito com o estado atual do documento
+422 - Regra de negócio não atendida
+500 - Erro técnico
+```
+
+Exemplo:
+
+```json
+{
+  "ok": false,
+  "status": 400,
+  "message": "Quantidade inválida para o produto PROD002",
+  "request_id": "e44e83fc-9dd8-4112-8290-465d5e4d63d9",
+  "data": {
+    "processados": 1,
+    "resultado": [
+      {
+        "indice": 0,
+        "ok": false,
+        "status": 400,
+        "message": "Quantidade inválida para o produto PROD002"
+      }
+    ]
+  }
+}
+```
+
+### Todos os documentos com erro
+
+Quando todos os documentos apresentarem erro com o mesmo status, esse mesmo código será utilizado como status HTTP da requisição.
+
+Exemplo:
+
+```text
+Documento 1 -> 409
+Documento 2 -> 409
+
+Resultado HTTP -> 409
+```
+
+Quando os documentos apresentarem erros com códigos diferentes, o lote será consolidado como:
+
+```text
+HTTP 422 Unprocessable Entity
+```
+
+Exemplo:
+
+```text
+Documento 1 -> 400
+Documento 2 -> 409
+
+Resultado HTTP -> 422
+```
+
+### Processamento parcial
+
+Quando parte dos documentos for processada com sucesso e parte apresentar erro, a API retornará:
+
+```text
+HTTP 422 Unprocessable Entity
+```
+
+Exemplo:
+
+```json
+{
+  "ok": false,
+  "status": 422,
+  "message": "Integração de documentos de saída processada com pendências",
+  "request_id": "12109ac6-52ea-47e3-b986-b99333893e7e",
+  "data": {
+    "processados": 2,
+    "resultado": [
+      {
+        "indice": 0,
+        "ok": true,
+        "status": 200,
+        "acao": "insert",
+        "status_codigo": "PRONTO_PARA_ROMANEIO"
+      },
+      {
+        "indice": 1,
+        "ok": false,
+        "status": 400,
+        "message": "Quantidade inválida para o produto PROD002"
+      }
+    ]
+  }
+}
+```
+
+<Note>
+  - Em um processamento parcial, os documentos retornados com `ok: true` já foram processados pelo WMS.
+  - O integrador deve analisar `data.resultado[]` para identificar individualmente quais documentos foram processados e quais apresentaram erro.
+  - O código HTTP da resposta representa o resultado consolidado do lote.
+  - Uma falha individual não será mais representada como HTTP `200`.
+</Note>
+
+## Status HTTP da Integração
+
+| Código | Descrição |
+| :-- | :-- |
+| `200` | Todos os documentos foram processados com sucesso |
+| `400` | Payload inválido ou erro de validação |
+| `401` | Falha de autenticação ou usuário sem empresa associada |
+| `409` | Conflito com o estado atual do documento |
+| `422` | Regra de negócio não atendida, erros heterogêneos ou processamento parcial do lote |
+| `500` | Erro técnico inesperado durante o processamento |
 
 ## Erros comuns
 
